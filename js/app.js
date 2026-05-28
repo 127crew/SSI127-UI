@@ -1,1 +1,16 @@
-// Main app entry point and router setup\ndocument.addEventListener('DOMContentLoaded', () => {\n    // Initialize router\n    APP_ROUTER = new Router('#app');\n    \n    // Register pages\n    APP_ROUTER.register('/login', LoginPage);\n    APP_ROUTER.register('/dashboard', DashboardPage);\n    APP_ROUTER.register('/dids', DidsPage);\n    APP_ROUTER.register('/clients', ClientsPage);\n    APP_ROUTER.register('/profile', ProfilePage);\n    \n    // Navigate to current route or login\n    const route = window.location.hash.slice(1) || (Storage.isAuthenticated() ? '/dashboard' : '/login');\n    APP_ROUTER.navigate(route);\n});\n"
+// Main app entry point and router setup
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize router
+    APP_ROUTER = new Router('#app');
+    
+    // Register pages
+    APP_ROUTER.register('/login', LoginPage);
+    APP_ROUTER.register('/dashboard', DashboardPage);
+    APP_ROUTER.register('/dids', DidsPage);
+    APP_ROUTER.register('/clients', ClientsPage);
+    APP_ROUTER.register('/profile', ProfilePage);
+    
+    // Navigate to current route or login
+    const route = window.location.hash.slice(1) || (Storage.isAuthenticated() ? '/dashboard' : '/login');
+    APP_ROUTER.navigate(route);
+});

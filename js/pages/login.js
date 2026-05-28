@@ -1,1 +1,86 @@
-// Login Page - DID-based authentication\nconst LoginPage = {\n    async render(container) {\n        container.innerHTML = `\n            <div class=\"auth-container\">\n                <div class=\"auth-card\">\n                    <h1 class=\"auth-title\">SSI127</h1>\n                    <p class=\"auth-subtitle\">Self-Sovereign Identity</p>\n                    \n                    <form id=\"loginForm\" class=\"auth-form\">\n                        <div class=\"form-group\">\n                            <label class=\"form-label\">DID (Decentralized Identifier)</label>\n                            <input type=\"text\" id=\"didInput\" name=\"did\" class=\"form-input\" placeholder=\"did:key:z...\" required>\n                            <small class=\"form-hint\">Enter your DID to authenticate</small>\n                        </div>\n                        \n                        <button type=\"submit\" class=\"btn btn-primary btn-full\">Sign In</button>\n                        \n                        <div class=\"auth-divider\">or</div>\n                        \n                        <button type=\"button\" id=\"demoBtn\" class=\"btn btn-secondary btn-full\">Try Demo DID</button>\n                    </form>\n                    \n                    <div id=\"authStatus\" class=\"auth-status\"></div>\n                    \n                    <div class=\"auth-help\">\n                        <p><strong>New to SSI?</strong></p>\n                        <p>Create a DID using a web5 library or <a href=\"https://ssi.127crew.dev/generate-did\" target=\"_blank\">generate one here</a></p>\n                    </div>\n                </div>\n            </div>\n        `;\n    },\n    \n    async onMount() {\n        // Redirect if already authenticated\n        if (Storage.isAuthenticated()) {\n            APP_ROUTER.push('/dashboard');\n            return;\n        }\n        \n        const form = document.getElementById('loginForm');\n        const statusEl = document.getElementById('authStatus');\n        const demoBtn = document.getElementById('demoBtn');\n        \n        form.addEventListener('submit', async (e) => {\n            e.preventDefault();\n            const did = document.getElementById('didInput').value.trim();\n            \n            if (!did) {\n                statusEl.innerHTML = '<div class=\"error\">Please enter a DID</div>';\n                return;\n            }\n            \n            await this.authenticate(did, statusEl);\n        });\n        \n        demoBtn.addEventListener('click', async () => {\n            document.getElementById('didInput').value = 'did:key:z6MkhaXgBZDvotDkL5257faWxcqoG2YTHL7cJGt1BQnrEd7v';\n            await this.authenticate('did:key:z6MkhaXgBZDvotDkL5257faWxcqoG2YTHL7cJGt1BQnrEd7v', statusEl);\n        });\n    },\n    \n    async authenticate(did, statusEl) {\n        try {\n            statusEl.innerHTML = '<div class=\"info\">Getting challenge...</div>';\n            \n            // Step 1: Get challenge\n            const chalRes = await API_CLIENT.authChallenge(did);\n            const nonce = chalRes.nonce;\n            \n            statusEl.innerHTML = '<div class=\"info\">Challenge received. Awaiting signature...</div>';\n            \n            // Step 2: In a real app, user would sign with their DID key\n            // For demo, we'll use a mock signature\n            const signature = this.createMockSignature(nonce);\n            \n            statusEl.innerHTML = '<div class=\"info\">Verifying signature...</div>';\n            \n            // Step 3: Verify signature\n            const verifyRes = await API_CLIENT.authVerify(did, nonce, signature);\n            const token = verifyRes.access_token;\n            \n            // Store token and user info\n            Storage.setToken(token);\n            Storage.setUser({ did, createdAt: new Date().toISOString() });\n            \n            statusEl.innerHTML = '<div class=\"success\">Authentication successful!</div>';\n            \n            // Redirect to dashboard\n            setTimeout(() => {\n                APP_ROUTER.push('/dashboard');\n            }, 500);\n        } catch (error) {\n            statusEl.innerHTML = `<div class=\"error\">Authentication failed: ${error.message}</div>`;\n        }\n    },\n    \n    createMockSignature(nonce) {\n        // In production, this would use the user's private key\n        // For demo purposes, create a base64-encoded mock signature\n        return btoa('mock_signature:' + nonce);\n    }\n};\n"
+// Login Page - DID-based authentication
+const LoginPage = {
+    async render(container) {
+        container.innerHTML = `
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1 class="auth-title">SSI127</h1>
+                    <p class="auth-subtitle">Self-Sovereign Identity</p>
+                    
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label">DID (Decentralized Identifier)</label>
+                            <input type="text" id="didInput" name="did" class="form-input" placeholder="did:key:z..." required>
+                            <small class="form-hint">Enter your DID to authenticate</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                        
+                        <div class="auth-divider">or</div>
+                        
+                        <button type="button" id="demoBtn" class="btn btn-secondary btn-full">Try Demo DID</button>
+                    </form>
+                    
+                    <div id="authStatus" class="auth-status"></div>
+                    
+                    <div class="auth-help">
+                        <p><strong>New to SSI?</strong></p>
+                        <p>Create a DID using a web5 library or <a href="https://ssi.127crew.dev/generate-did" target="_blank">generate one here</a></p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    
+    async onMount() {
+        if (Storage.isAuthenticated()) {
+            APP_ROUTER.push('/dashboard');
+            return;
+        }
+        
+        const form = document.getElementById('loginForm');
+        const statusEl = document.getElementById('authStatus');
+        const demoBtn = document.getElementById('demoBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const did = document.getElementById('didInput').value.trim();
+            if (!did) {
+                statusEl.innerHTML = '<div class="error">Please enter a DID</div>';
+                return;
+            }
+            await this.authenticate(did, statusEl);
+        });
+        
+        demoBtn.addEventListener('click', async () => {
+            document.getElementById('didInput').value = 'did:key:z6MkhaXgBZDvotDkL5257faWxcqoG2YTHL7cJGt1BQnrEd7v';
+            await this.authenticate('did:key:z6MkhaXgBZDvotDkL5257faWxcqoG2YTHL7cJGt1BQnrEd7v', statusEl);
+        });
+    },
+    
+    async authenticate(did, statusEl) {
+        try {
+            statusEl.innerHTML = '<div class="info">Getting challenge...</div>';
+            const chalRes = await API_CLIENT.authChallenge(did);
+            const nonce = chalRes.nonce;
+            
+            statusEl.innerHTML = '<div class="info">Challenge received. Verifying...</div>';
+            const signature = this.createMockSignature(nonce);
+            
+            const verifyRes = await API_CLIENT.authVerify(did, nonce, signature);
+            const token = verifyRes.access_token;
+            
+            Storage.setToken(token);
+            Storage.setUser({ did, createdAt: new Date().toISOString() });
+            
+            statusEl.innerHTML = '<div class="success">Authentication successful!</div>';
+            setTimeout(() => APP_ROUTER.push('/dashboard'), 500);
+        } catch (error) {
+            statusEl.innerHTML = `<div class="error">Authentication failed: ${error.message}</div>`;
+        }
+    },
+    
+    createMockSignature(nonce) {
+        return btoa('mock_signature:' + nonce);
+    }
+};

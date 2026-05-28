@@ -1,1 +1,188 @@
-/* Auth & Dashboard Specific Styles */\n\n.auth-container {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    min-height: 100vh;\n    background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(0, 0, 0, 0.1));\n    padding: var(--spacing-lg);\n}\n\n.auth-card {\n    background-color: var(--surface-color);\n    border: 1px solid var(--border-color);\n    padding: var(--spacing-xl);\n    border-radius: 8px;\n    width: 100%;\n    max-width: 400px;\n    box-shadow: 0 8px 32px rgba(0, 240, 255, 0.1);\n}\n\n.auth-title {\n    font-size: 2rem;\n    margin-bottom: var(--spacing-sm);\n    color: var(--text-primary);\n}\n\n.auth-title span {\n    color: var(--primary-accent);\n}\n\n.auth-subtitle {\n    color: var(--text-secondary);\n    margin-bottom: var(--spacing-lg);\n    font-size: 0.95rem;\n}\n\n.auth-form {\n    margin: var(--spacing-lg) 0;\n}\n\n.btn-full {\n    width: 100%;\n    display: block;\n}\n\n.auth-divider {\n    text-align: center;\n    color: var(--text-secondary);\n    margin: var(--spacing-lg) 0;\n    font-size: 0.85rem;\n}\n\n.auth-status {\n    margin-top: var(--spacing-lg);\n    padding: var(--spacing-md);\n    border-radius: 4px;\n    font-size: 0.9rem;\n}\n\n.auth-status.error,\n.error {\n    background-color: rgba(239, 68, 68, 0.1);\n    border: 1px solid rgba(239, 68, 68, 0.3);\n    color: #ef4444;\n}\n\n.auth-status.success,\n.success {\n    background-color: rgba(34, 197, 94, 0.1);\n    border: 1px solid rgba(34, 197, 94, 0.3);\n    color: #22c55e;\n}\n\n.auth-status.info,\n.info {\n    background-color: rgba(0, 240, 255, 0.1);\n    border: 1px solid rgba(0, 240, 255, 0.3);\n    color: var(--primary-accent);\n}\n\n.auth-help {\n    margin-top: var(--spacing-lg);\n    padding-top: var(--spacing-lg);\n    border-top: 1px solid var(--border-color);\n    font-size: 0.85rem;\n    color: var(--text-secondary);\n}\n\n.auth-help a {\n    color: var(--primary-accent);\n    text-decoration: underline;\n}\n\n.form-hint {\n    display: block;\n    font-size: 0.8rem;\n    color: var(--text-secondary);\n    margin-top: 4px;\n}\n\n/* Dashboard */\n\n.dashboard {\n    min-height: 100vh;\n    background-color: var(--bg-color);\n}\n\n.navbar {\n    background-color: rgba(5, 5, 5, 0.95);\n    border-bottom: 1px solid var(--border-color);\n    padding: var(--spacing-md) 0;\n    margin-bottom: var(--spacing-xl);\n}\n\n.nav-container {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    gap: var(--spacing-lg);\n}\n\n.logo {\n    font-family: var(--font-mono);\n    font-weight: 700;\n    font-size: 1.25rem;\n    color: var(--text-primary);\n}\n\n.logo span {\n    color: var(--primary-accent);\n}\n\n.nav-links {\n    display: flex;\n    gap: var(--spacing-lg);\n    flex: 1;\n}\n\n.nav-link {\n    font-size: 0.9rem;\n    color: var(--text-secondary);\n    text-decoration: none;\n    padding: var(--spacing-sm) var(--spacing-md);\n    border-radius: 4px;\n    transition: all 0.2s ease;\n}\n\n.nav-link:hover,\n.nav-link.active {\n    color: var(--primary-accent);\n    background-color: rgba(0, 240, 255, 0.1);\n}\n\n.main-content {\n    padding: var(--spacing-lg) 0;\n}\n\n.main-content h1 {\n    margin-bottom: var(--spacing-sm);\n}\n\n.text-secondary {\n    color: var(--text-secondary);\n}\n\n.form-card {\n    background-color: var(--surface-color);\n    border: 1px solid var(--border-color);\n    padding: var(--spacing-lg);\n    border-radius: 8px;\n}\n\n.form-card h3 {\n    margin-bottom: var(--spacing-lg);\n}\n\n@media (max-width: 768px) {\n    .nav-links {\n        display: none;\n    }\n    \n    .auth-container {\n        padding: var(--spacing-md);\n    }\n    \n    .auth-card {\n        padding: var(--spacing-lg);\n    }\n}\n"
+/* Auth & Dashboard Specific Styles */
+
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(0, 0, 0, 0.1));
+    padding: var(--spacing-lg);
+}
+
+.auth-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-xl);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 240, 255, 0.1);
+}
+
+.auth-title {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.auth-title span {
+    color: var(--primary-accent);
+}
+
+.auth-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    font-size: 0.95rem;
+}
+
+.auth-form {
+    margin: var(--spacing-lg) 0;
+}
+
+.btn-full {
+    width: 100%;
+    display: block;
+}
+
+.auth-divider {
+    text-align: center;
+    color: var(--text-secondary);
+    margin: var(--spacing-lg) 0;
+    font-size: 0.85rem;
+}
+
+.auth-status {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.auth-status.error,
+.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.auth-status.success,
+.success {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.auth-status.info,
+.info {
+    background-color: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    color: var(--primary-accent);
+}
+
+.auth-help {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.auth-help a {
+    color: var(--primary-accent);
+    text-decoration: underline;
+}
+
+.form-hint {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.dashboard {
+    min-height: 100vh;
+    background-color: var(--bg-color);
+}
+
+.navbar {
+    background-color: rgba(5, 5, 5, 0.95);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-md) 0;
+    margin-bottom: var(--spacing-xl);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.logo {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.logo span {
+    color: var(--primary-accent);
+}
+
+.nav-links {
+    display: flex;
+    gap: var(--spacing-lg);
+    flex: 1;
+}
+
+.nav-link {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-accent);
+    background-color: rgba(0, 240, 255, 0.1);
+}
+
+.main-content {
+    padding: var(--spacing-lg) 0;
+}
+
+.main-content h1 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.form-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-lg);
+    border-radius: 8px;
+}
+
+.form-card h3 {
+    margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+    
+    .auth-container {
+        padding: var(--spacing-md);
+    }
+    
+    .auth-card {
+        padding: var(--spacing-lg);
+    }
+}

@@ -1,1 +1,69 @@
-// Dashboard Page - Main user interface\nconst DashboardPage = {\n    async render(container) {\n        const user = Storage.getUser();\n        \n        container.innerHTML = `\n            <div class=\"dashboard\">\n                <nav class=\"navbar\">\n                    <div class=\"container nav-container\">\n                        <a href=\"#/dashboard\" class=\"logo\">127<span>Crew</span> SSI</a>\n                        <div class=\"nav-links\">\n                            <a href=\"#/dashboard\" class=\"nav-link active\">Dashboard</a>\n                            <a href=\"#/dids\" class=\"nav-link\">DIDs</a>\n                            <a href=\"#/clients\" class=\"nav-link\">Clients</a>\n                            <a href=\"#/profile\" class=\"nav-link\">Profile</a>\n                        </div>\n                        <button id=\"logoutBtn\" class=\"btn btn-secondary\" style=\"padding: 8px 16px; font-size: 0.85rem;\">Logout</button>\n                    </div>\n                </nav>\n                \n                <main class=\"main-content\">\n                    <div class=\"container\">\n                        <h1>Welcome to SSI127</h1>\n                        <p class=\"text-secondary\">Your self-sovereign identity management dashboard</p>\n                        \n                        <div class=\"grid grid-2\" style=\"margin-top: var(--spacing-xl);\">\n                            <div class=\"card\">\n                                <span class=\"card-meta\">ACCOUNT</span>\n                                <h3>Your DID</h3>\n                                <p class=\"mono\" style=\"word-break: break-all; font-size: 0.85rem; color: var(--primary-accent); margin: var(--spacing-md) 0;\">${user?.did || 'Unknown'}</p>\n                                <a href=\"#/profile\" class=\"btn btn-primary\" style=\"font-size: 0.85rem;\">View Profile</a>\n                            </div>\n                            \n                            <div class=\"card\">\n                                <span class=\"card-meta\">MANAGEMENT</span>\n                                <h3>Quick Actions</h3>\n                                <div style=\"display: flex; flex-direction: column; gap: var(--spacing-md); margin-top: var(--spacing-md);\">\n                                    <a href=\"#/dids\" class=\"btn btn-secondary\" style=\"font-size: 0.85rem; text-align: center;\">Manage DIDs</a>\n                                    <a href=\"#/clients\" class=\"btn btn-secondary\" style=\"font-size: 0.85rem; text-align: center;\">Register OAuth Client</a>\n                                </div>\n                            </div>\n                        </div>\n                        \n                        <div class=\"card\" style=\"margin-top: var(--spacing-lg);\">\n                            <span class=\"card-meta\">GETTING STARTED</span>\n                            <h3>Next Steps</h3>\n                            <ul style=\"list-style: disc; padding-left: var(--spacing-lg); margin-top: var(--spacing-md);\">\n                                <li>Create or import a DID</li>\n                                <li>Register an OAuth application</li>\n                                <li>Issue or verify credentials</li>\n                                <li>Integrate with your service</li>\n                            </ul>\n                        </div>\n                    </div>\n                </main>\n            </div>\n        `;\n    },\n    \n    async onMount() {\n        if (!Storage.isAuthenticated()) {\n            APP_ROUTER.push('/login');\n            return;\n        }\n        \n        const logoutBtn = document.getElementById('logoutBtn');\n        logoutBtn.addEventListener('click', () => {\n            Storage.logout();\n            APP_ROUTER.push('/login');\n        });\n    }\n};\n"
+// Dashboard Page - Main user interface
+const DashboardPage = {
+    async render(container) {
+        const user = Storage.getUser();
+        container.innerHTML = `
+            <div class="dashboard">
+                <nav class="navbar">
+                    <div class="container nav-container">
+                        <a href="#/dashboard" class="logo">127<span>Crew</span> SSI</a>
+                        <div class="nav-links">
+                            <a href="#/dashboard" class="nav-link active">Dashboard</a>
+                            <a href="#/dids" class="nav-link">DIDs</a>
+                            <a href="#/clients" class="nav-link">Clients</a>
+                            <a href="#/profile" class="nav-link">Profile</a>
+                        </div>
+                        <button id="logoutBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Logout</button>
+                    </div>
+                </nav>
+                
+                <main class="main-content">
+                    <div class="container">
+                        <h1>Welcome to SSI127</h1>
+                        <p class="text-secondary">Your self-sovereign identity management dashboard</p>
+                        
+                        <div class="grid grid-2" style="margin-top: var(--spacing-xl);">
+                            <div class="card">
+                                <span class="card-meta">ACCOUNT</span>
+                                <h3>Your DID</h3>
+                                <p class="mono" style="word-break: break-all; font-size: 0.85rem; color: var(--primary-accent); margin: var(--spacing-md) 0;">${user?.did || 'Unknown'}</p>
+                                <a href="#/profile" class="btn btn-primary" style="font-size: 0.85rem;">View Profile</a>
+                            </div>
+                            
+                            <div class="card">
+                                <span class="card-meta">MANAGEMENT</span>
+                                <h3>Quick Actions</h3>
+                                <div style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-top: var(--spacing-md);">
+                                    <a href="#/dids" class="btn btn-secondary" style="font-size: 0.85rem; text-align: center;">Manage DIDs</a>
+                                    <a href="#/clients" class="btn btn-secondary" style="font-size: 0.85rem; text-align: center;">Register OAuth Client</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card" style="margin-top: var(--spacing-lg);">
+                            <span class="card-meta">GETTING STARTED</span>
+                            <h3>Next Steps</h3>
+                            <ul style="list-style: disc; padding-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                                <li>Create or import a DID</li>
+                                <li>Register an OAuth application</li>
+                                <li>Issue or verify credentials</li>
+                                <li>Integrate with your service</li>
+                            </ul>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+    
+    async onMount() {
+        if (!Storage.isAuthenticated()) {
+            APP_ROUTER.push('/login');
+            return;
+        }
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            Storage.logout();
+            APP_ROUTER.push('/login');
+        });
+    }
+};

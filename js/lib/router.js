@@ -1,6 +1,4 @@
-/**
- * Simple client-side router for SPA
- */
+// Simple client-side router for SPA
 class Router {
     constructor(rootSelector) {
         this.root = document.querySelector(rootSelector);
