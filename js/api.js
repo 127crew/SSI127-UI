@@ -1,6 +1,4 @@
-/**
- * API client for SSI127 backend
- */
+// API client for SSI127 backend
 class API {
     constructor(baseURL = 'https://ssi.127crew.dev') {
         this.baseURL = baseURL;
@@ -15,7 +13,6 @@ class API {
             }
         };
 
-        // Add auth token if available
         const token = Storage.getToken();
         if (token) {
             options.headers.Authorization = `Bearer ${token}`;
@@ -27,10 +24,18 @@ class API {
 
         try {
             const response = await fetch(url, options);
-            const result = await response.json();
+            const text = await response.text();
+            
+            let result;
+            try {
+                result = text ? JSON.parse(text) : {};
+            } catch (e) {
+                console.error('Failed to parse response:', text);
+                throw new Error(`Backend returned invalid JSON. Status: ${response.status}. Response: ${text.substring(0, 200)}`);
+            }
 
             if (!response.ok) {
-                throw new Error(result.error || response.statusText);
+                throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
             }
 
             return result;
@@ -82,5 +87,18 @@ class API {
     }
 }
 
-// Global API instance
-const API_CLIENT = new API(window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://ssi.127crew.dev');
+// Global API instance - update baseURL as needed
+const API_CLIENT = new API(
+    window.location.hostname === 'localhost' 
+        ? 'http://localhost:8080' 
+        : 'https://ssi.127crew.dev'
+);
+
+// For testing: override API URL if needed
+if (window.location.search.includes('api=')) {
+    const params = new URLSearchParams(window.location.search);
+    const customAPI = params.get('api');
+    if (customAPI) {
+        Object.defineProperty(API_CLIENT, 'baseURL', { value: customAPI, writable: true });
+    }
+}

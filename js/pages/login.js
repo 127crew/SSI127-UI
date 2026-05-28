@@ -24,8 +24,10 @@ const LoginPage = {
                     <div id="authStatus" class="auth-status"></div>
                     
                     <div class="auth-help">
-                        <p><strong>New to SSI?</strong></p>
-                        <p>Create a DID using a web5 library or <a href="https://ssi.127crew.dev/generate-did" target="_blank">generate one here</a></p>
+                        <p><strong>Backend Status:</strong></p>
+                        <p id="backendStatus" style="font-size: 0.8rem; color: #aaa;">Checking...</p>
+                        <p style="margin-top: var(--spacing-md);"><strong>Current Backend:</strong></p>
+                        <p id="backendUrl" style="font-size: 0.75rem; word-break: break-all; color: #888;"></p>
                     </div>
                 </div>
             </div>
@@ -37,6 +39,12 @@ const LoginPage = {
             APP_ROUTER.push('/dashboard');
             return;
         }
+        
+        // Show backend URL
+        document.getElementById('backendUrl').textContent = API_CLIENT.baseURL;
+        
+        // Check backend status
+        this.checkBackendStatus();
         
         const form = document.getElementById('loginForm');
         const statusEl = document.getElementById('authStatus');
@@ -60,7 +68,7 @@ const LoginPage = {
     
     async authenticate(did, statusEl) {
         try {
-            statusEl.innerHTML = '<div class="info">Getting challenge...</div>';
+            statusEl.innerHTML = '<div class="info">Getting challenge from backend...</div>';
             const chalRes = await API_CLIENT.authChallenge(did);
             const nonce = chalRes.nonce;
             
@@ -76,7 +84,23 @@ const LoginPage = {
             statusEl.innerHTML = '<div class="success">Authentication successful!</div>';
             setTimeout(() => APP_ROUTER.push('/dashboard'), 500);
         } catch (error) {
-            statusEl.innerHTML = `<div class="error">Authentication failed: ${error.message}</div>`;
+            console.error('Authentication error:', error);
+            statusEl.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+        }
+    },
+    
+    async checkBackendStatus() {
+        try {
+            const response = await fetch(`${API_CLIENT.baseURL}/health`);
+            const backendStatusEl = document.getElementById('backendStatus');
+            if (response.ok) {
+                backendStatusEl.innerHTML = '<span style="color: #22c55e;">✓ Backend is online</span>';
+            } else {
+                backendStatusEl.innerHTML = `<span style="color: #ef4444;">✗ Backend error (HTTP ${response.status})</span>`;
+            }
+        } catch (error) {
+            const backendStatusEl = document.getElementById('backendStatus');
+            backendStatusEl.innerHTML = `<span style="color: #ef4444;">✗ Backend unreachable</span>`;
         }
     },
     
