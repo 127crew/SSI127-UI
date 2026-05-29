@@ -27,6 +27,28 @@ class Storage {
         localStorage.removeItem('user');
     }
 
+    static getWallets() {
+        const wallets = localStorage.getItem('ssi_wallets');
+        return wallets ? JSON.parse(wallets) : [];
+    }
+
+    static saveWallet(wallet) {
+        const wallets = this.getWallets();
+        // Remove existing if same DID
+        const filtered = wallets.filter(w => w.did !== wallet.did);
+        filtered.push(wallet);
+        localStorage.setItem('ssi_wallets', JSON.stringify(filtered));
+    }
+
+    static getWallet(did) {
+        return this.getWallets().find(w => w.did === did);
+    }
+
+    static deleteWallet(did) {
+        const wallets = this.getWallets().filter(w => w.did !== did);
+        localStorage.setItem('ssi_wallets', JSON.stringify(wallets));
+    }
+
     static isAuthenticated() {
         return !!this.getToken();
     }

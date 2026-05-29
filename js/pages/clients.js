@@ -9,7 +9,7 @@ const ClientsPage = {
                         <div class="nav-links">
                             <a href="#/dashboard" class="nav-link">Dashboard</a>
                             <a href="#/dids" class="nav-link">DIDs</a>
-                            <a href="#/clients" class="nav-link active">Clients</a>
+                            <a href="#/clients" class="nav-link active">Dev Portal</a>
                             <a href="#/profile" class="nav-link">Profile</a>
                         </div>
                         <button id="logoutBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Logout</button>
@@ -18,8 +18,8 @@ const ClientsPage = {
                 
                 <main class="main-content">
                     <div class="container">
-                        <h1>OAuth Clients</h1>
-                        <p class="text-secondary">Register and manage OAuth applications</p>
+                        <h1>Developer Portal</h1>
+                        <p class="text-secondary">Register OAuth applications (Admin only)</p>
                         
                         <form id="registerClientForm" class="form-card" style="margin-top: var(--spacing-lg);">
                             <h3>Register New Client</h3>
@@ -42,7 +42,7 @@ const ClientsPage = {
             </div>
         `;
     },
-    
+
     async onMount() {
         if (!Storage.isAuthenticated()) {
             APP_ROUTER.push('/login');
@@ -50,23 +50,23 @@ const ClientsPage = {
         }
         const form = document.getElementById('registerClientForm');
         const statusEl = document.getElementById('clientStatus');
-        
+
         document.getElementById('logoutBtn').addEventListener('click', () => {
             Storage.logout();
             APP_ROUTER.push('/login');
         });
-        
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = form.querySelector('input[name="name"]').value.trim();
             const redirectUrisText = form.querySelector('textarea[name="redirectUris"]').value.trim();
             const redirectUris = redirectUrisText.split('\n').map(uri => uri.trim()).filter(uri => uri);
-            
+
             if (!name || redirectUris.length === 0) {
                 statusEl.innerHTML = '<div class="error">Please fill all fields</div>';
                 return;
             }
-            
+
             try {
                 statusEl.innerHTML = '<div class="info">Registering client...</div>';
                 const res = await API_CLIENT.registerClient(name, redirectUris);

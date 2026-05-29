@@ -10,7 +10,7 @@ const DashboardPage = {
                         <div class="nav-links">
                             <a href="#/dashboard" class="nav-link active">Dashboard</a>
                             <a href="#/dids" class="nav-link">DIDs</a>
-                            <a href="#/clients" class="nav-link">Clients</a>
+                            <a href="#/clients" class="nav-link">Dev Portal</a>
                             <a href="#/profile" class="nav-link">Profile</a>
                         </div>
                         <button id="logoutBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Logout</button>
@@ -55,7 +55,7 @@ const DashboardPage = {
             </div>
         `;
     },
-    
+
     async onMount() {
         if (!Storage.isAuthenticated()) {
             APP_ROUTER.push('/login');

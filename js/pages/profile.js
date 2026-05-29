@@ -3,7 +3,7 @@ const ProfilePage = {
     async render(container) {
         const user = Storage.getUser();
         const createdDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown';
-        
+
         container.innerHTML = `
             <div class="dashboard">
                 <nav class="navbar">
@@ -12,7 +12,7 @@ const ProfilePage = {
                         <div class="nav-links">
                             <a href="#/dashboard" class="nav-link">Dashboard</a>
                             <a href="#/dids" class="nav-link">DIDs</a>
-                            <a href="#/clients" class="nav-link">Clients</a>
+                            <a href="#/clients" class="nav-link">Dev Portal</a>
                             <a href="#/profile" class="nav-link active">Profile</a>
                         </div>
                         <button id="logoutBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Logout</button>
@@ -54,23 +54,23 @@ const ProfilePage = {
             </div>
         `;
     },
-    
+
     async onMount() {
         if (!Storage.isAuthenticated()) {
             APP_ROUTER.push('/login');
             return;
         }
-        
+
         document.getElementById('logoutBtn').addEventListener('click', () => {
             Storage.logout();
             APP_ROUTER.push('/login');
         });
-        
+
         document.getElementById('logoutBtnProfile').addEventListener('click', () => {
             Storage.logout();
             APP_ROUTER.push('/login');
         });
-        
+
         document.getElementById('copyTokenBtn').addEventListener('click', () => {
             const token = Storage.getToken();
             navigator.clipboard.writeText(token).then(() => alert('Token copied!'));

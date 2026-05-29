@@ -11,100 +11,146 @@ const LoginPage = {
                         <div class="form-group">
                             <label class="form-label">DID (Decentralized Identifier)</label>
                             <input type="text" id="didInput" name="did" class="form-input" placeholder="did:key:z..." required>
-                            <small class="form-hint">Enter your DID to authenticate</small>
+                            <small class="form-hint">Enter your DID or use a stored wallet</small>
+                        </div>
+                        
+                        <div id="storedWallets" style="margin-bottom: var(--spacing-md); display: none;">
+                            <label class="form-label">Saved Wallets</label>
+                            <select id="walletSelect" class="form-input" style="margin-bottom: var(--spacing-sm);">
+                                <option value="">-- Select a wallet --</option>
+                            </select>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-full">Sign In</button>
                         
                         <div class="auth-divider">or</div>
                         
-                        <button type="button" id="demoBtn" class="btn btn-secondary btn-full">Try Demo DID</button>
+                        <button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Create New Identity</button>
                     </form>
                     
                     <div id="authStatus" class="auth-status"></div>
                     
                     <div class="auth-help">
-                        <p><strong>Backend Status:</strong></p>
-                        <p id="backendStatus" style="font-size: 0.8rem; color: #aaa;">Checking...</p>
-                        <p style="margin-top: var(--spacing-md);"><strong>Current Backend:</strong></p>
-                        <p id="backendUrl" style="font-size: 0.75rem; word-break: break-all; color: #888;"></p>
+                        <p><strong>System Status:</strong> <span id="backendStatus">Checking...</span></p>
+                        <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">API: <span id="backendUrl"></span></p>
                     </div>
                 </div>
             </div>
         `;
     },
-    
+
     async onMount() {
         if (Storage.isAuthenticated()) {
             APP_ROUTER.push('/dashboard');
             return;
         }
-        
-        // Show backend URL
+
         document.getElementById('backendUrl').textContent = API_CLIENT.baseURL;
-        
-        // Check backend status
         this.checkBackendStatus();
-        
+        this.loadStoredWallets();
+
         const form = document.getElementById('loginForm');
         const statusEl = document.getElementById('authStatus');
-        const demoBtn = document.getElementById('demoBtn');
-        
+        const createBtn = document.getElementById('createWalletBtn');
+        const walletSelect = document.getElementById('walletSelect');
+        const didInput = document.getElementById('didInput');
+
+        walletSelect.addEventListener('change', () => {
+            if (walletSelect.value) {
+                didInput.value = walletSelect.value;
+            }
+        });
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const did = document.getElementById('didInput').value.trim();
-            if (!did) {
-                statusEl.innerHTML = '<div class="error">Please enter a DID</div>';
-                return;
-            }
+            const did = didInput.value.trim();
+            if (!did) return;
             await this.authenticate(did, statusEl);
         });
-        
-        demoBtn.addEventListener('click', async () => {
-            document.getElementById('didInput').value = 'did:key:z6MkhaXgBZDvotDkL5257faWxcqoG2YTHL7cJGt1BQnrEd7v';
-            await this.authenticate('did:key:z6MkhaXgBZDvotDkL5257faWxcqoG2YTHL7cJGt1BQnrEd7v', statusEl);
+
+        createBtn.addEventListener('click', async () => {
+            try {
+                statusEl.innerHTML = '<div class="info">Generating secure keys...</div>';
+                const pair = await CryptoUtils.generateKeypair();
+                Storage.saveWallet(pair);
+
+                didInput.value = pair.did;
+                this.loadStoredWallets();
+                walletSelect.value = pair.did;
+
+                statusEl.innerHTML = `
+                    <div class="success">
+                        New DID created and saved!<br>
+                        <small style="word-break: break-all;">${pair.did}</small>
+                    </div>
+                `;
+            } catch (err) {
+                statusEl.innerHTML = `<div class="error">Generation failed: ${err.message}</div>`;
+            }
         });
     },
-    
+
+    loadStoredWallets() {
+        const wallets = Storage.getWallets();
+        const select = document.getElementById('walletSelect');
+        const container = document.getElementById('storedWallets');
+
+        if (wallets.length > 0) {
+            container.style.display = 'block';
+            select.innerHTML = '<option value="">-- Select a wallet --</option>';
+            wallets.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w.did;
+                opt.textContent = w.did.substring(0, 15) + '...';
+                select.appendChild(opt);
+            });
+        }
+    },
+
     async authenticate(did, statusEl) {
         try {
-            statusEl.innerHTML = '<div class="info">Getting challenge from backend...</div>';
+            const wallet = Storage.getWallet(did);
+            if (!wallet) {
+                throw new Error("Private key for this DID not found in local storage. Please create or import it first.");
+            }
+
+            statusEl.innerHTML = '<div class="info">Phase 1: Getting Auth Nonce...</div>';
             const chalRes = await API_CLIENT.authChallenge(did);
             const nonce = chalRes.nonce;
-            
-            statusEl.innerHTML = '<div class="info">Challenge received. Verifying...</div>';
-            const signature = this.createMockSignature(nonce);
-            
+
+            statusEl.innerHTML = '<div class="info">Phase 2: Signing internally...</div>';
+            const signature = await CryptoUtils.sign(nonce, wallet.privateKey);
+
+            statusEl.innerHTML = '<div class="info">Phase 3: Verifying Signature...</div>';
             const verifyRes = await API_CLIENT.authVerify(did, nonce, signature);
-            const token = verifyRes.access_token;
-            
-            Storage.setToken(token);
+
+            Storage.setToken(verifyRes.access_token);
             Storage.setUser({ did, createdAt: new Date().toISOString() });
-            
-            statusEl.innerHTML = '<div class="success">Authentication successful!</div>';
-            setTimeout(() => APP_ROUTER.push('/dashboard'), 500);
+
+            statusEl.innerHTML = '<div class="success">✓ Authenticated successfully!</div>';
+
+            const params = new URLSearchParams(window.location.hash.split('?')[1]);
+            const returnTo = params.get('return_to');
+
+            setTimeout(() => {
+                if (returnTo) {
+                    window.location.hash = '#' + decodeURIComponent(returnTo);
+                } else {
+                    APP_ROUTER.push('/dashboard');
+                }
+            }, 800);
         } catch (error) {
-            console.error('Authentication error:', error);
-            statusEl.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            statusEl.innerHTML = `<div class="error">Authentication failed:<br>${error.message}</div>`;
         }
     },
-    
+
     async checkBackendStatus() {
+        const el = document.getElementById('backendStatus');
         try {
-            const response = await fetch(`${API_CLIENT.baseURL}/health`);
-            const backendStatusEl = document.getElementById('backendStatus');
-            if (response.ok) {
-                backendStatusEl.innerHTML = '<span style="color: #22c55e;">✓ Backend is online</span>';
-            } else {
-                backendStatusEl.innerHTML = `<span style="color: #ef4444;">✗ Backend error (HTTP ${response.status})</span>`;
-            }
-        } catch (error) {
-            const backendStatusEl = document.getElementById('backendStatus');
-            backendStatusEl.innerHTML = `<span style="color: #ef4444;">✗ Backend unreachable</span>`;
+            const res = await fetch(`${API_CLIENT.baseURL}/health`);
+            el.innerHTML = res.ok ? '<span style="color: #00F0FF;">ONLINE</span>' : '<span style="color: #ff4d4d;">ERROR</span>';
+        } catch (e) {
+            el.innerHTML = '<span style="color: #ff4d4d;">OFFLINE</span>';
         }
-    },
-    
-    createMockSignature(nonce) {
-        return btoa('mock_signature:' + nonce);
     }
 };

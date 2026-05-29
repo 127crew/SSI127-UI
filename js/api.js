@@ -25,7 +25,7 @@ class API {
         try {
             const response = await fetch(url, options);
             const text = await response.text();
-            
+
             let result;
             try {
                 result = text ? JSON.parse(text) : {};
@@ -67,13 +67,14 @@ class API {
     }
 
     // OAuth endpoints
-    async authorize(clientId, redirectUri, did, nonce, signature) {
+    async authorize(clientId, redirectUri, did, nonce, signature, state = '') {
         return this.request('POST', '/oauth/authorize', {
             client_id: clientId,
             redirect_uri: redirectUri,
             did,
             nonce,
-            signature
+            signature,
+            state
         });
     }
 
@@ -89,8 +90,8 @@ class API {
 
 // Global API instance - update baseURL as needed
 const API_CLIENT = new API(
-    window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080' 
+    window.location.hostname === 'localhost'
+        ? 'http://localhost:8080'
         : 'https://ssi.127crew.dev'
 );
 
