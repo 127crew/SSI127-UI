@@ -62,7 +62,7 @@ const DidsPage = {
                 status.innerHTML = '<div class="success">New DID created!</div>';
                 setTimeout(() => status.innerHTML = '', 3000);
             } catch (err) {
-                status.innerHTML = `<div class="error">${err.message}</div>`;
+				status.replaceChildren(); const message = document.createElement('div'); message.className = 'error'; message.textContent = err.message; status.appendChild(message);
             }
         });
 
@@ -95,25 +95,25 @@ const DidsPage = {
         const listEl = document.getElementById('didList');
 
         if (wallets.length === 0) {
-            listEl.innerHTML = '<p class="text-secondary">No other DIDs found.</p>';
+			listEl.replaceChildren(); const empty = document.createElement('p'); empty.className = 'text-secondary'; empty.textContent = 'No other DIDs found.'; listEl.appendChild(empty);
             return;
         }
 
-        listEl.innerHTML = `<h3>Your Wallets (${wallets.length})</h3>`;
+		listEl.replaceChildren(); const heading = document.createElement('h3'); heading.textContent = `Your Wallets (${wallets.length})`; listEl.appendChild(heading);
         const container = document.createElement('div');
         container.className = 'grid grid-3';
 
         wallets.forEach(w => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `
-                <span class="card-meta">ED25519</span>
-                <p class="mono" style="word-break: break-all; font-size: 0.75rem;">${w.did}</p>
-                <div class="flex" style="margin-top: 10px;">
-                    <button class="btn btn-secondary btn-sm" onclick="LoginPage.authenticate('${w.did}', document.getElementById('didStatus'))">Switch</button>
-                    <button class="btn btn-secondary btn-sm" style="color: #ff4d4d; border-color: #442222;" onclick="DidsPage.deleteWallet('${w.did}')">Delete</button>
-                </div>
-            `;
+			const meta = document.createElement('span'); meta.className = 'card-meta'; meta.textContent = 'ED25519';
+			const did = document.createElement('p'); did.className = 'mono'; did.style.cssText = 'word-break: break-all; font-size: 0.75rem;'; did.textContent = w.did;
+			const actions = document.createElement('div'); actions.className = 'flex'; actions.style.marginTop = '10px';
+			const switchButton = document.createElement('button'); switchButton.className = 'btn btn-secondary btn-sm'; switchButton.textContent = 'Switch';
+			switchButton.addEventListener('click', () => LoginPage.authenticate(w.did, document.getElementById('didStatus')));
+			const deleteButton = document.createElement('button'); deleteButton.className = 'btn btn-secondary btn-sm'; deleteButton.style.cssText = 'color: #ff4d4d; border-color: #442222;'; deleteButton.textContent = 'Delete';
+			deleteButton.addEventListener('click', () => this.deleteWallet(w.did));
+			actions.append(switchButton, deleteButton); card.append(meta, did, actions);
             container.appendChild(card);
         });
         listEl.appendChild(container);

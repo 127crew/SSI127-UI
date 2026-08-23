@@ -6,17 +6,19 @@ const AuthorizePage = {
         const redirectUri = params.get('redirect_uri');
 		const responseType = params.get('response_type');
 		const state = params.get('state');
+		const nonce = params.get('nonce');
+		const scope = params.get('scope');
 		const codeChallenge = params.get('code_challenge');
 		const codeChallengeMethod = params.get('code_challenge_method');
 
-		const secureRequest = clientId && redirectUri && responseType === 'code' && state &&
+		const secureRequest = clientId && redirectUri && responseType === 'code' && state && nonce && scope &&
 			codeChallenge && codeChallengeMethod === 'S256';
         if (!secureRequest) {
             container.innerHTML = `
                 <div class="auth-container">
                     <div class="auth-card">
                         <h1 class="auth-title">Error</h1>
-						<p class="auth-subtitle">This authorization request is incomplete. OAuth code flow, state, and S256 PKCE are required.</p>
+						<p class="auth-subtitle">This authorization request is incomplete. OAuth code flow, state, nonce, scopes, and S256 PKCE are required.</p>
                         <a href="#/dashboard" class="btn btn-secondary">Go to Dashboard</a>
                     </div>
                 </div>
@@ -32,11 +34,12 @@ const AuthorizePage = {
                     
                     <div class="info" style="margin-bottom: var(--spacing-lg);">
                         <p><strong>Application:</strong></p>
-                        <p id="clientName" class="mono">${clientId}</p>
+						<p id="clientName" class="mono">Loading application…</p>
                     </div>
 
                     <div id="authContent">
-                        <p class="text-secondary">By approving, you allow this app to verify your DID and access your basic profile information.</p>
+						<p class="text-secondary">By approving, you allow this app to receive:</p>
+						<ul id="scopeList" style="text-align: left; margin: var(--spacing-md) 0;"></ul>
                         
                         <div style="margin-top: var(--spacing-xl);">
                             <button id="approveBtn" class="btn btn-primary btn-full">Approve & Continue</button>
@@ -58,7 +61,16 @@ const AuthorizePage = {
 		const codeChallengeMethod = params.get('code_challenge_method') || '';
 		const responseType = params.get('response_type');
 		const state = params.get('state') || '';
-		if (!clientId || !redirectUri || responseType !== 'code' || !state || !codeChallenge || codeChallengeMethod !== 'S256') return;
+		const oidcNonce = params.get('nonce') || '';
+		const scope = params.get('scope') || '';
+		if (!clientId || !redirectUri || responseType !== 'code' || !state || !oidcNonce || !scope || !codeChallenge || codeChallengeMethod !== 'S256') return;
+		const scopeDescriptions = { openid: 'Your stable SSI subject identifier', profile: 'Your basic DID profile', forum: 'Your linked forum member identifier', offline_access: 'Continued access using a rotating refresh token' };
+		const scopeList = document.getElementById('scopeList');
+		for (const requested of [...new Set(scope.split(/\s+/).filter(Boolean))]) {
+			const item = document.createElement('li');
+			item.textContent = scopeDescriptions[requested] || `Unknown permission: ${requested}`;
+			scopeList.appendChild(item);
+		}
 
         // Ensure user is authenticated to approve
         if (!Storage.isAuthenticated()) {
@@ -102,7 +114,7 @@ const AuthorizePage = {
 
                 // 3. Authorize with backend
                 statusEl.innerHTML = '<div class="info">Approving with identity provider...</div>';
-				const authRes = await API_CLIENT.authorize(clientId, redirectUri, user.did, nonce, signature, state, codeChallenge, codeChallengeMethod);
+				const authRes = await API_CLIENT.authorize(clientId, redirectUri, user.did, nonce, signature, state, codeChallenge, oidcNonce, scope, codeChallengeMethod);
 
                 statusEl.innerHTML = '<div class="success">Approved! Redirecting back...</div>';
 

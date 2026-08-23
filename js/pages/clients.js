@@ -68,15 +68,14 @@ const ClientsPage = {
             try {
                 statusEl.innerHTML = '<div class="info">Registering client...</div>';
                 const res = await API_CLIENT.registerClient(name, redirectUris);
-                statusEl.innerHTML = `
-                    <div class="success">
-                        <h4>Client Registered!</h4>
-                        <p><strong>Client ID:</strong></p>
-                        <p class="mono" style="word-break: break-all; font-size: 0.85rem;">${res.client_id}</p>
-                        <p><strong>Client Secret (save this now):</strong></p>
-                        <p class="mono" style="word-break: break-all; font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: var(--spacing-sm); border-radius: 4px;">${res.client_secret}</p>
-                    </div>
-                `;
+				statusEl.replaceChildren();
+				const success = document.createElement('div'); success.className = 'success';
+				const title = document.createElement('h4'); title.textContent = 'Client Registered!';
+				const idLabel = document.createElement('p'); idLabel.textContent = 'Client ID:';
+				const id = document.createElement('p'); id.className = 'mono'; id.style.wordBreak = 'break-all'; id.textContent = res.client_id;
+				const secretLabel = document.createElement('p'); secretLabel.textContent = 'Client Secret (save this now):';
+				const secret = document.createElement('p'); secret.className = 'mono'; secret.style.wordBreak = 'break-all'; secret.textContent = res.client_secret;
+				success.append(title, idLabel, id, secretLabel, secret); statusEl.appendChild(success);
                 form.reset();
 				await this.loadClients();
 			} catch (error) {

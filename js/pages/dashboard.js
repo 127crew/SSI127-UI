@@ -26,7 +26,7 @@ const DashboardPage = {
                             <div class="card">
                                 <span class="card-meta">ACCOUNT</span>
                                 <h3>Your DID</h3>
-                                <p class="mono" style="word-break: break-all; font-size: 0.85rem; color: var(--primary-accent); margin: var(--spacing-md) 0;">${user?.did || 'Unknown'}</p>
+								<p id="dashboardDid" class="mono" style="word-break: break-all; font-size: 0.85rem; color: var(--primary-accent); margin: var(--spacing-md) 0;"></p>
                                 <a href="#/profile" class="btn btn-primary" style="font-size: 0.85rem;">View Profile</a>
                             </div>
                             
@@ -61,6 +61,7 @@ const DashboardPage = {
             APP_ROUTER.push('/login');
             return;
         }
+		document.getElementById('dashboardDid').textContent = Storage.getUser()?.did || 'Unknown';
         document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
     }
 };

@@ -79,14 +79,12 @@ const LoginPage = {
                 this.loadStoredWallets();
                 walletSelect.value = pair.did;
 
-                statusEl.innerHTML = `
-                    <div class="success">
-                        New DID created and saved!<br>
-                        <small style="word-break: break-all;">${pair.did}</small>
-                    </div>
-                `;
+				statusEl.replaceChildren(); const success = document.createElement('div'); success.className = 'success';
+				const message = document.createElement('p'); message.textContent = 'New DID created and saved!';
+				const did = document.createElement('small'); did.style.wordBreak = 'break-all'; did.textContent = pair.did;
+				success.append(message, did); statusEl.appendChild(success);
             } catch (err) {
-                statusEl.innerHTML = `<div class="error">Generation failed: ${err.message}</div>`;
+				statusEl.replaceChildren(); const error = document.createElement('div'); error.className = 'error'; error.textContent = `Generation failed: ${err.message}`; statusEl.appendChild(error);
             }
         });
     },

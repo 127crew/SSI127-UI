@@ -29,9 +29,9 @@ const ProfilePage = {
                                 <span class="card-meta">ACCOUNT</span>
                                 <h3>Identity</h3>
                                 <p style="margin-bottom: var(--spacing-md);"><strong>DID:</strong></p>
-                                <p class="mono" style="word-break: break-all; font-size: 0.85rem; color: var(--primary-accent);">${user?.did || 'Unknown'}</p>
+								<p id="profileDid" class="mono" style="word-break: break-all; font-size: 0.85rem; color: var(--primary-accent);"></p>
                                 <p style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);"><strong>Account Created:</strong></p>
-                                <p>${createdDate}</p>
+								<p id="profileCreated"></p>
                             </div>
                             
                             <div class="card">
@@ -63,8 +63,12 @@ const ProfilePage = {
             APP_ROUTER.push('/login');
             return;
         }
+		const user = Storage.getUser();
+		const createdDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown';
 
         document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
+		document.getElementById('profileDid').textContent = user?.did || 'Unknown';
+		document.getElementById('profileCreated').textContent = createdDate;
         document.getElementById('logoutBtnProfile').addEventListener('click', logoutCurrentSession);
 
         document.getElementById('copyTokenBtn').addEventListener('click', () => {

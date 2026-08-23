@@ -81,13 +81,15 @@ class API {
 	async revokeClient(clientId) { return this.request('DELETE', `/clients/${encodeURIComponent(clientId)}`); }
 
     // OAuth endpoints
-	async authorize(clientId, redirectUri, did, nonce, signature, state, codeChallenge, codeChallengeMethod = 'S256') {
+	async authorize(clientId, redirectUri, did, challengeNonce, signature, state, codeChallenge, oidcNonce, scope, codeChallengeMethod = 'S256') {
         return this.request('POST', '/oauth/authorize', {
 			response_type: 'code',
             client_id: clientId,
             redirect_uri: redirectUri,
             did,
-            nonce,
+			challenge_nonce: challengeNonce,
+			nonce: oidcNonce,
+			scope,
             signature,
 			state,
 			code_challenge: codeChallenge,
@@ -105,6 +107,13 @@ class API {
 			code_verifier: codeVerifier
         });
     }
+
+	async refreshToken(refreshToken, clientId, clientSecret) {
+		return this.request('POST', '/oauth/token', {
+			grant_type: 'refresh_token', refresh_token: refreshToken,
+			client_id: clientId, client_secret: clientSecret
+		});
+	}
 }
 
 async function logoutCurrentSession() {
