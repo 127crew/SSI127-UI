@@ -8,6 +8,7 @@ class API {
         const url = `${this.baseURL}${endpoint}`;
         const options = {
             method,
+			credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -54,8 +55,8 @@ class API {
         return this.request('POST', '/auth/verify', { did, nonce, signature });
     }
 
-	async linkIdentity(forumToken, did, nonce, signature) {
-		return this.request('POST', '/auth/link', { did, nonce, signature }, forumToken);
+	async linkIdentity(did, nonce, signature) {
+		return this.request('POST', '/auth/link', { did, nonce, signature });
 	}
 
     async authJWKS() {
@@ -97,14 +98,6 @@ class API {
             client_secret: clientSecret
         });
     }
-}
-
-async function exchangeForumSessionForLinkToken(forumToken) {
-	const forumAPI = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://forum-api.127crew.dev';
-	const response = await fetch(`${forumAPI}/auth/sso-link-token`, { method: 'POST', headers: { Authorization: `Bearer ${forumToken}` } });
-	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error || 'Forum rejected the session');
-	return result.link_token;
 }
 
 // Global API instance - update baseURL as needed
