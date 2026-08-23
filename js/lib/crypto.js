@@ -1,10 +1,3 @@
-import * as ed from 'https://esm.sh/@noble/ed25519@2.2.3';
-import { sha512 } from 'https://esm.sh/@noble/hashes@1.4.0/sha512';
-
-// Set fallbacks for environments without crypto.subtle or for internal sync requirements
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
-ed.etc.sha512Async = (...m) => Promise.resolve(ed.etc.sha512Sync(...m));
-
 // Utility to convert hex to bytes
 function hexToBytes(hex) {
     const bytes = new Uint8Array(hex.length / 2);
@@ -45,12 +38,13 @@ const CryptoUtils = {
         };
     },
 
-    async sign(nonce, privateKeyHex) {
+	async sign(nonce, privateKey) {
+		if (!(privateKey instanceof CryptoKey) || privateKey.type !== 'private' || privateKey.algorithm.name !== 'Ed25519') {
+			throw new Error('Secure signing key is unavailable.');
+		}
 		const encoder = new TextEncoder();
 		const nonceBytes = encoder.encode(nonce);
-		const sig = privateKeyHex instanceof CryptoKey
-			? new Uint8Array(await crypto.subtle.sign('Ed25519', privateKeyHex, nonceBytes))
-			: await ed.signAsync(nonceBytes, hexToBytes(privateKeyHex));
+		const sig = new Uint8Array(await crypto.subtle.sign('Ed25519', privateKey, nonceBytes));
         // Return base64 signature
         let binary = '';
         const len = sig.byteLength;

@@ -4,13 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://ssi.127crew.dev https://forum-api.127crew.dev http://localhost:8080 http://localhost:3000; object-src 'none'; base-uri 'none'; form-action 'self'">
+	<meta name="referrer" content="no-referrer">
     <title>SSI127 Accounts | Self-Sovereign Identity</title>
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/JhQbkGsX/127crew.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/auth.css">
 </head>
@@ -20,7 +16,7 @@
 
     <script src="js/lib/router.js"></script>
     <script src="js/lib/storage.js"></script>
-    <script src="js/lib/crypto.js" type="module"></script>
+	<script src="js/lib/crypto.js"></script>
     <script src="js/api.js"></script>
     <script src="js/pages/login.js"></script>
 	<script src="js/pages/link.js"></script>
