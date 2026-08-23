@@ -60,7 +60,7 @@ const AuthorizePage = {
         }
 
         const user = Storage.getUser();
-        const wallet = Storage.getWallet(user.did);
+		const wallet = await Storage.getWallet(user.did);
         const approveBtn = document.getElementById('approveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         const statusEl = document.getElementById('status');

@@ -31,24 +31,26 @@ function base58Encode(bytes) {
 
 const CryptoUtils = {
     async generateKeypair() {
-        const privKey = crypto.getRandomValues(new Uint8Array(32));
-        const pubKey = await ed.getPublicKey(privKey);
+		if (!crypto.subtle) throw new Error('Secure browser key storage is unavailable.');
+		const pair = await crypto.subtle.generateKey({ name: 'Ed25519' }, false, ['sign', 'verify']);
+		const pubKey = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
 		const multicodecKey = new Uint8Array(2 + pubKey.length);
 		multicodecKey.set([0xed, 0x01]);
 		multicodecKey.set(pubKey, 2);
 		const did = `did:key:z${base58Encode(multicodecKey)}`;
         return {
-            privateKey: bytesToHex(privKey),
+			privateKey: pair.privateKey,
             publicKey: bytesToHex(pubKey),
             did
         };
     },
 
     async sign(nonce, privateKeyHex) {
-        const privKey = hexToBytes(privateKeyHex);
-        const encoder = new TextEncoder();
-        const nonceBytes = encoder.encode(nonce);
-        const sig = await ed.signAsync(nonceBytes, privKey);
+		const encoder = new TextEncoder();
+		const nonceBytes = encoder.encode(nonce);
+		const sig = privateKeyHex instanceof CryptoKey
+			? new Uint8Array(await crypto.subtle.sign('Ed25519', privateKeyHex, nonceBytes))
+			: await ed.signAsync(nonceBytes, hexToBytes(privateKeyHex));
         // Return base64 signature
         let binary = '';
         const len = sig.byteLength;
@@ -56,7 +58,15 @@ const CryptoUtils = {
             binary += String.fromCharCode(sig[i]);
         }
         return window.btoa(binary);
-    }
+	},
+
+	async importLegacyPrivateKey(privateKeyHex) {
+		const seed = hexToBytes(privateKeyHex);
+		const prefix = hexToBytes('302e020100300506032b657004220420');
+		const pkcs8 = new Uint8Array(prefix.length + seed.length);
+		pkcs8.set(prefix); pkcs8.set(seed, prefix.length);
+		return crypto.subtle.importKey('pkcs8', pkcs8, { name: 'Ed25519' }, false, ['sign']);
+	}
 };
 
 window.CryptoUtils = CryptoUtils;

@@ -60,8 +60,8 @@ const DidsPage = {
             try {
                 status.innerHTML = '<div class="info">Generating new DID...</div>';
                 const pair = await CryptoUtils.generateKeypair();
-                Storage.saveWallet(pair);
-                this.renderWalletList();
+				await Storage.saveWallet(pair);
+				await this.renderWalletList();
                 status.innerHTML = '<div class="success">New DID created!</div>';
                 setTimeout(() => status.innerHTML = '', 3000);
             } catch (err) {
@@ -78,10 +78,11 @@ const DidsPage = {
             });
         });
 
-        document.getElementById('exportDidBtn').addEventListener('click', () => {
-            const wallet = Storage.getWallet(user.did);
-            if (wallet) {
-                const data = JSON.stringify(wallet, null, 2);
+		document.getElementById('exportDidBtn').textContent = 'Export Public DID';
+		document.getElementById('exportDidBtn').addEventListener('click', async () => {
+			const wallet = await Storage.getWallet(user.did);
+			if (wallet) {
+				const data = JSON.stringify({ did: wallet.did, publicKey: wallet.publicKey }, null, 2);
                 const blob = new Blob([data], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -92,8 +93,8 @@ const DidsPage = {
         });
     },
 
-    renderWalletList() {
-        const wallets = Storage.getWallets();
+	async renderWalletList() {
+		const wallets = await Storage.getWallets();
         const listEl = document.getElementById('didList');
 
         if (wallets.length === 0) {
@@ -121,10 +122,10 @@ const DidsPage = {
         listEl.appendChild(container);
     },
 
-    deleteWallet(did) {
+	async deleteWallet(did) {
         if (confirm('Are you sure you want to delete this DID from local storage? You will LOSE access to it if you have not exported your private key.')) {
-            Storage.deleteWallet(did);
-            this.renderWalletList();
+			await Storage.deleteWallet(did);
+			await this.renderWalletList();
         }
     }
 };

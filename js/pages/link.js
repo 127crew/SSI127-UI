@@ -15,7 +15,7 @@ const LinkPage = {
 			</div></div>`;
 	},
 	async onMount() {
-		const wallets = Storage.getWallets();
+		const wallets = await Storage.getWallets();
 		const select = document.getElementById('linkWallet');
 		select.replaceChildren(...wallets.map(wallet => { const option = document.createElement('option'); option.value = wallet.did; option.textContent = wallet.did; return option; }));
 		if (!wallets.length) { document.getElementById('linkStatus').textContent = 'Create an identity on the sign-in page before connecting your forum account.'; }
@@ -24,7 +24,7 @@ const LinkPage = {
 		document.getElementById('linkForm').addEventListener('submit', async event => {
 			event.preventDefault(); const status = document.getElementById('linkStatus');
 			try {
-				const did = select.value, wallet = Storage.getWallet(did);
+				const did = select.value, wallet = await Storage.getWallet(did);
 				if (!wallet) throw new Error('Create an identity before linking your account.');
 				status.textContent = 'Verifying membership and identity…';
 				const challenge = await API_CLIENT.authChallenge(did);

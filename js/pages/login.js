@@ -73,7 +73,7 @@ const LoginPage = {
             try {
                 statusEl.innerHTML = '<div class="info">Generating secure keys...</div>';
                 const pair = await CryptoUtils.generateKeypair();
-                Storage.saveWallet(pair);
+				await Storage.saveWallet(pair);
 
                 didInput.value = pair.did;
                 this.loadStoredWallets();
@@ -91,8 +91,8 @@ const LoginPage = {
         });
     },
 
-    loadStoredWallets() {
-        const wallets = Storage.getWallets();
+	async loadStoredWallets() {
+		const wallets = await Storage.getWallets();
         const select = document.getElementById('walletSelect');
         const container = document.getElementById('storedWallets');
 
@@ -110,7 +110,7 @@ const LoginPage = {
 
     async authenticate(did, statusEl) {
         try {
-            const wallet = Storage.getWallet(did);
+			const wallet = await Storage.getWallet(did);
             if (!wallet) {
                 throw new Error("Private key for this DID not found in local storage. Please create or import it first.");
             }
