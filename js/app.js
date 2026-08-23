@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Register pages
     APP_ROUTER.register('/login', LoginPage);
+	APP_ROUTER.register('/link', LinkPage);
     APP_ROUTER.register('/authorize', AuthorizePage);
     APP_ROUTER.register('/dashboard', DashboardPage);
     APP_ROUTER.register('/dids', DidsPage);

@@ -47,7 +47,9 @@ const AuthorizePage = {
     async onMount() {
         const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
         const clientId = params.get('client_id');
-        const redirectUri = params.get('redirect_uri');
+		const redirectUri = params.get('redirect_uri');
+		const codeChallenge = params.get('code_challenge') || '';
+		const codeChallengeMethod = params.get('code_challenge_method') || '';
         if (!clientId || !redirectUri) return;
 
         // Ensure user is authenticated to approve
@@ -62,7 +64,16 @@ const AuthorizePage = {
         const approveBtn = document.getElementById('approveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         const statusEl = document.getElementById('status');
-        const state = params.get('state') || '';
+		const state = params.get('state') || '';
+		try {
+			const client = await API_CLIENT.getClient(clientId);
+			if (!client.redirect_uris.includes(redirectUri)) throw new Error('The requested redirect is not registered.');
+			document.getElementById('clientName').textContent = client.name;
+		} catch (error) {
+			document.getElementById('authContent').replaceChildren();
+			statusEl.textContent = `Cannot authorize this application: ${error.message}`;
+			return;
+		}
 
         cancelBtn.addEventListener('click', () => {
             let cancelUrl = redirectUri + '?error=access_denied';
@@ -84,7 +95,7 @@ const AuthorizePage = {
 
                 // 3. Authorize with backend
                 statusEl.innerHTML = '<div class="info">Approving with identity provider...</div>';
-                const authRes = await API_CLIENT.authorize(clientId, redirectUri, user.did, nonce, signature, state);
+				const authRes = await API_CLIENT.authorize(clientId, redirectUri, user.did, nonce, signature, state, codeChallenge, codeChallengeMethod);
 
                 statusEl.innerHTML = '<div class="success">Approved! Redirecting back...</div>';
 
@@ -94,7 +105,7 @@ const AuthorizePage = {
                 }, 1000);
             } catch (error) {
                 approveBtn.disabled = false;
-                statusEl.innerHTML = `<div class="error">Authorization failed:<br>${error.message}</div>`;
+				statusEl.textContent = `Authorization failed: ${error.message}`;
             }
         });
     }

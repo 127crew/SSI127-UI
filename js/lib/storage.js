@@ -3,15 +3,16 @@
  */
 class Storage {
     static setToken(token) {
-        localStorage.setItem('access_token', token);
+		sessionStorage.setItem('access_token', token);
+		localStorage.removeItem('access_token');
     }
 
     static getToken() {
-        return localStorage.getItem('access_token');
+		return sessionStorage.getItem('access_token');
     }
 
     static clearToken() {
-        localStorage.removeItem('access_token');
+		sessionStorage.removeItem('access_token');
     }
 
     static setUser(user) {
@@ -50,7 +51,13 @@ class Storage {
     }
 
     static isAuthenticated() {
-        return !!this.getToken();
+		const token = this.getToken();
+		if (!token) return false;
+		try {
+			const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+			if (!payload.exp || payload.exp * 1000 <= Date.now() || payload.token_use !== 'access') { this.logout(); return false; }
+			return true;
+		} catch (_) { this.logout(); return false; }
     }
 
     static logout() {

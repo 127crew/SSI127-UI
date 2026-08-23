@@ -26,6 +26,7 @@ const LoginPage = {
                         <div class="auth-divider">or</div>
                         
                         <button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Create New Identity</button>
+						<p class="auth-help">First time here? <a href="#/link">Connect a verified forum account</a></p>
                     </form>
                     
                     <div id="authStatus" class="auth-status"></div>
@@ -140,7 +141,7 @@ const LoginPage = {
                 }
             }, 800);
         } catch (error) {
-            statusEl.innerHTML = `<div class="error">Authentication failed:<br>${error.message}</div>`;
+			statusEl.textContent = `Authentication failed: ${error.message}`;
         }
     },
 

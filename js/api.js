@@ -4,7 +4,7 @@ class API {
         this.baseURL = baseURL;
     }
 
-    async request(method, endpoint, data = null) {
+    async request(method, endpoint, data = null, tokenOverride = null) {
         const url = `${this.baseURL}${endpoint}`;
         const options = {
             method,
@@ -13,7 +13,7 @@ class API {
             }
         };
 
-        const token = Storage.getToken();
+		const token = tokenOverride || Storage.getToken();
         if (token) {
             options.headers.Authorization = `Bearer ${token}`;
         }
@@ -54,6 +54,10 @@ class API {
         return this.request('POST', '/auth/verify', { did, nonce, signature });
     }
 
+	async linkIdentity(forumToken, did, nonce, signature) {
+		return this.request('POST', '/auth/link', { did, nonce, signature }, forumToken);
+	}
+
     async authJWKS() {
         return this.request('GET', '/auth/jwks');
     }
@@ -66,15 +70,22 @@ class API {
         });
     }
 
+	async listClients() { return this.request('GET', '/clients/'); }
+	async getClient(clientId) { return this.request('GET', `/clients/${encodeURIComponent(clientId)}/public`); }
+	async rotateClientSecret(clientId) { return this.request('POST', `/clients/${encodeURIComponent(clientId)}/rotate-secret`); }
+	async revokeClient(clientId) { return this.request('DELETE', `/clients/${encodeURIComponent(clientId)}`); }
+
     // OAuth endpoints
-    async authorize(clientId, redirectUri, did, nonce, signature, state = '') {
+	async authorize(clientId, redirectUri, did, nonce, signature, state = '', codeChallenge = '', codeChallengeMethod = '') {
         return this.request('POST', '/oauth/authorize', {
             client_id: clientId,
             redirect_uri: redirectUri,
             did,
             nonce,
             signature,
-            state
+			state,
+			code_challenge: codeChallenge,
+			code_challenge_method: codeChallengeMethod
         });
     }
 
@@ -96,7 +107,7 @@ const API_CLIENT = new API(
 );
 
 // For testing: override API URL if needed
-if (window.location.search.includes('api=')) {
+if (window.location.hostname === 'localhost' && window.location.search.includes('api=')) {
     const params = new URLSearchParams(window.location.search);
     const customAPI = params.get('api');
     if (customAPI) {

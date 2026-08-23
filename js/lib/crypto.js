@@ -19,11 +19,24 @@ function bytesToHex(bytes) {
     return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function base58Encode(bytes) {
+	const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+	let value = 0n;
+	for (const byte of bytes) value = value * 256n + BigInt(byte);
+	let encoded = '';
+	while (value > 0n) { encoded = alphabet[Number(value % 58n)] + encoded; value /= 58n; }
+	for (const byte of bytes) { if (byte !== 0) break; encoded = '1' + encoded; }
+	return encoded;
+}
+
 const CryptoUtils = {
     async generateKeypair() {
         const privKey = crypto.getRandomValues(new Uint8Array(32));
         const pubKey = await ed.getPublicKey(privKey);
-        const did = `did:key:${bytesToHex(pubKey)}`; // Keep consistent with backend stripping 'z'
+		const multicodecKey = new Uint8Array(2 + pubKey.length);
+		multicodecKey.set([0xed, 0x01]);
+		multicodecKey.set(pubKey, 2);
+		const did = `did:key:z${base58Encode(multicodecKey)}`;
         return {
             privateKey: bytesToHex(privKey),
             publicKey: bytesToHex(pubKey),

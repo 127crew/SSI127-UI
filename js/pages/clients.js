@@ -19,7 +19,7 @@ const ClientsPage = {
                 <main class="main-content">
                     <div class="container">
                         <h1>Developer Portal</h1>
-                        <p class="text-secondary">Register OAuth applications (Admin only)</p>
+						<p class="text-secondary">Create and manage SSO integrations for your websites</p>
                         
                         <form id="registerClientForm" class="form-card" style="margin-top: var(--spacing-lg);">
                             <h3>Register New Client</h3>
@@ -50,6 +50,7 @@ const ClientsPage = {
         }
         const form = document.getElementById('registerClientForm');
         const statusEl = document.getElementById('clientStatus');
+		await this.loadClients();
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             Storage.logout();
@@ -80,9 +81,49 @@ const ClientsPage = {
                     </div>
                 `;
                 form.reset();
-            } catch (error) {
-                statusEl.innerHTML = `<div class="error">Registration failed: ${error.message}</div>`;
+				await this.loadClients();
+			} catch (error) {
+				statusEl.textContent = `Registration failed: ${error.message}`;
             }
         });
-    }
+	},
+
+	async loadClients() {
+		const list = document.getElementById('clientList');
+		try {
+			const result = await API_CLIENT.listClients();
+			list.replaceChildren();
+			const heading = document.createElement('h2'); heading.textContent = 'Your applications'; list.appendChild(heading);
+			if (!result.clients.length) { const empty = document.createElement('p'); empty.className = 'text-secondary'; empty.textContent = 'No SSO applications yet.'; list.appendChild(empty); return; }
+			for (const client of result.clients) {
+				const card = document.createElement('article'); card.className = 'card';
+				const title = document.createElement('h3'); title.textContent = client.name;
+				const id = document.createElement('p'); id.className = 'mono'; id.textContent = client.client_id;
+				const uris = document.createElement('p'); uris.textContent = `Redirects: ${client.redirect_uris.join(', ')}`;
+				const state = document.createElement('p'); state.textContent = client.revoked_at ? 'Revoked' : 'Active';
+				card.append(title, id, uris, state);
+				if (!client.revoked_at) {
+					const rotate = document.createElement('button'); rotate.className = 'btn btn-secondary'; rotate.textContent = 'Rotate secret';
+					rotate.addEventListener('click', () => this.rotate(client.client_id));
+					const revoke = document.createElement('button'); revoke.className = 'btn btn-secondary'; revoke.textContent = 'Revoke';
+					revoke.addEventListener('click', () => this.revoke(client.client_id, client.name));
+					card.append(rotate, revoke);
+				}
+				list.appendChild(card);
+			}
+		} catch (error) { list.textContent = `Could not load applications: ${error.message}`; }
+	},
+
+	async rotate(clientId) {
+		if (!confirm('Rotate this secret? The existing secret will stop working immediately.')) return;
+		const status = document.getElementById('clientStatus');
+		try { const result = await API_CLIENT.rotateClientSecret(clientId); status.textContent = `New client secret (save it now): ${result.client_secret}`; }
+		catch (error) { status.textContent = `Rotation failed: ${error.message}`; }
+	},
+
+	async revoke(clientId, name) {
+		if (!confirm(`Revoke ${name}? This application will no longer be able to exchange codes.`)) return;
+		try { await API_CLIENT.revokeClient(clientId); await this.loadClients(); }
+		catch (error) { document.getElementById('clientStatus').textContent = `Revocation failed: ${error.message}`; }
+	}
 };

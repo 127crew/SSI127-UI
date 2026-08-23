@@ -13,7 +13,8 @@ class Router {
     }
 
     async navigate(path) {
-        const route = this.routes[path];
+		const routePath = path.split('?')[0];
+		const route = this.routes[routePath];
         if (!route) {
             this.navigate('/login');
             return;
