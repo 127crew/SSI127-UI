@@ -59,6 +59,10 @@ class API {
 		return this.request('POST', '/auth/link', { did, nonce, signature });
 	}
 
+	async logout() { return this.request('POST', '/auth/logout'); }
+	async listSessions() { return this.request('GET', '/auth/sessions'); }
+	async revokeSession(sessionId) { return this.request('DELETE', `/auth/sessions/${encodeURIComponent(sessionId)}`); }
+
     async authJWKS() {
         return this.request('GET', '/auth/jwks');
     }
@@ -97,6 +101,17 @@ class API {
             client_id: clientId,
             client_secret: clientSecret
         });
+    }
+}
+
+async function logoutCurrentSession() {
+    try {
+        if (Storage.getToken()) await API_CLIENT.logout();
+    } catch (error) {
+        console.warn('The server session could not be revoked:', error);
+    } finally {
+        Storage.logout();
+        APP_ROUTER.push('/login');
     }
 }
 

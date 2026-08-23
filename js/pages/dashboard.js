@@ -61,9 +61,6 @@ const DashboardPage = {
             APP_ROUTER.push('/login');
             return;
         }
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            Storage.logout();
-            APP_ROUTER.push('/login');
-        });
+        document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
     }
 };

@@ -36,8 +36,11 @@ const ProfilePage = {
                             
                             <div class="card">
                                 <span class="card-meta">SECURITY</span>
-                                <h3>Session</h3>
-                                <p style="margin-bottom: var(--spacing-lg);">You are logged in with your DID authentication.</p>
+                                <h3>Active sessions</h3>
+                                <p style="margin-bottom: var(--spacing-lg);">Review and revoke tokens issued to your account and connected apps.</p>
+                                <div id="sessionList" style="display: grid; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                                    <p class="text-secondary">Loading sessions…</p>
+                                </div>
                                 <button id="logoutBtnProfile" class="btn btn-primary">Logout</button>
                             </div>
                         </div>
@@ -61,19 +64,64 @@ const ProfilePage = {
             return;
         }
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            Storage.logout();
-            APP_ROUTER.push('/login');
-        });
-
-        document.getElementById('logoutBtnProfile').addEventListener('click', () => {
-            Storage.logout();
-            APP_ROUTER.push('/login');
-        });
+        document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
+        document.getElementById('logoutBtnProfile').addEventListener('click', logoutCurrentSession);
 
         document.getElementById('copyTokenBtn').addEventListener('click', () => {
             const token = Storage.getToken();
             navigator.clipboard.writeText(token).then(() => alert('Token copied!'));
         });
+
+        await this.loadSessions();
+    },
+
+    async loadSessions() {
+        const list = document.getElementById('sessionList');
+        try {
+            const result = await API_CLIENT.listSessions();
+            list.replaceChildren();
+            for (const session of result.sessions || []) {
+                const row = document.createElement('div');
+                row.style.cssText = 'padding: var(--spacing-md); border: 1px solid var(--border-color); border-radius: 4px;';
+
+                const title = document.createElement('strong');
+                const current = session.id === result.current;
+                title.textContent = session.client_id ? `Connected app: ${session.client_id}` : `SSI account${current ? ' (current)' : ''}`;
+                row.appendChild(title);
+
+                const details = document.createElement('p');
+                details.className = 'text-secondary';
+                details.style.cssText = 'font-size: 0.8rem; margin: 6px 0 10px;';
+                details.textContent = `${session.revoked_at ? 'Revoked' : 'Active'} · expires ${new Date(session.expires_at).toLocaleString()}`;
+                row.appendChild(details);
+
+                if (!session.revoked_at) {
+                    const revoke = document.createElement('button');
+                    revoke.className = 'btn btn-secondary';
+                    revoke.style.cssText = 'padding: 6px 10px; font-size: 0.8rem;';
+                    revoke.textContent = current ? 'Revoke and log out' : 'Revoke session';
+                    revoke.addEventListener('click', async () => {
+                        revoke.disabled = true;
+                        try {
+                            await API_CLIENT.revokeSession(session.id);
+                            if (current) {
+                                Storage.logout();
+                                APP_ROUTER.push('/login');
+                                return;
+                            }
+                            await this.loadSessions();
+                        } catch (error) {
+                            alert(error.message);
+                            revoke.disabled = false;
+                        }
+                    });
+                    row.appendChild(revoke);
+                }
+                list.appendChild(row);
+            }
+            if (!list.childElementCount) list.textContent = 'No active sessions.';
+        } catch (error) {
+            list.textContent = `Could not load sessions: ${error.message}`;
+        }
     }
 };

@@ -52,10 +52,7 @@ const ClientsPage = {
         const statusEl = document.getElementById('clientStatus');
 		await this.loadClients();
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            Storage.logout();
-            APP_ROUTER.push('/login');
-        });
+        document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();

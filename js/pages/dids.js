@@ -48,10 +48,7 @@ const DidsPage = {
         }
         const user = Storage.getUser();
         document.getElementById('currentDid').textContent = user?.did || 'No DID';
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            Storage.logout();
-            APP_ROUTER.push('/login');
-        });
+        document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
 
         this.renderWalletList();
 
