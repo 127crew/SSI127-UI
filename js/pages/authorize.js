@@ -4,13 +4,19 @@ const AuthorizePage = {
         const params = new URLSearchParams(window.location.hash.split('?')[1]);
         const clientId = params.get('client_id');
         const redirectUri = params.get('redirect_uri');
+		const responseType = params.get('response_type');
+		const state = params.get('state');
+		const codeChallenge = params.get('code_challenge');
+		const codeChallengeMethod = params.get('code_challenge_method');
 
-        if (!clientId || !redirectUri) {
+		const secureRequest = clientId && redirectUri && responseType === 'code' && state &&
+			codeChallenge && codeChallengeMethod === 'S256';
+        if (!secureRequest) {
             container.innerHTML = `
                 <div class="auth-container">
                     <div class="auth-card">
                         <h1 class="auth-title">Error</h1>
-                        <p class="auth-subtitle">Missing required parameters: client_id and redirect_uri</p>
+						<p class="auth-subtitle">This authorization request is incomplete. OAuth code flow, state, and S256 PKCE are required.</p>
                         <a href="#/dashboard" class="btn btn-secondary">Go to Dashboard</a>
                     </div>
                 </div>
@@ -50,7 +56,9 @@ const AuthorizePage = {
 		const redirectUri = params.get('redirect_uri');
 		const codeChallenge = params.get('code_challenge') || '';
 		const codeChallengeMethod = params.get('code_challenge_method') || '';
-        if (!clientId || !redirectUri) return;
+		const responseType = params.get('response_type');
+		const state = params.get('state') || '';
+		if (!clientId || !redirectUri || responseType !== 'code' || !state || !codeChallenge || codeChallengeMethod !== 'S256') return;
 
         // Ensure user is authenticated to approve
         if (!Storage.isAuthenticated()) {
@@ -64,7 +72,6 @@ const AuthorizePage = {
         const approveBtn = document.getElementById('approveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         const statusEl = document.getElementById('status');
-		const state = params.get('state') || '';
 		try {
 			const client = await API_CLIENT.getClient(clientId);
 			if (!client.redirect_uris.includes(redirectUri)) throw new Error('The requested redirect is not registered.');
