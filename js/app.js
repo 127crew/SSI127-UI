@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     APP_ROUTER.register('/dids', DidsPage);
     APP_ROUTER.register('/clients', ClientsPage);
     APP_ROUTER.register('/profile', ProfilePage);
+	APP_ROUTER.register('/docs', DocsPage);
 
     // Navigate to current route or login
     const hash = window.location.hash.slice(1);

@@ -20,6 +20,7 @@ const ClientsPage = {
                     <div class="container">
                         <h1>Developer Portal</h1>
 						<p class="text-secondary">Create and manage SSO integrations for your websites</p>
+						<a href="#/docs" class="btn btn-secondary">Read integration documentation</a>
                         
                         <form id="registerClientForm" class="form-card" style="margin-top: var(--spacing-lg);">
                             <h3>Register New Client</h3>

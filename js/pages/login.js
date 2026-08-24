@@ -61,6 +61,7 @@ const LoginPage = {
 							</form>
 							<div id="authStatus" class="auth-status" aria-live="polite"></div>
 							<p class="auth-local-note"><strong>Local means local.</strong> Generating a DID creates no server account and grants no access until forum verification is completed.</p>
+							<p class="auth-help"><a href="#/docs">Developer documentation</a></p>
 						</section>
 					</div>
                 </div>
