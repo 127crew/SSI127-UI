@@ -34,6 +34,13 @@ const DidsPage = {
                         </div>
                         
                         <div id="didList" style="margin-top: var(--spacing-lg);"></div>
+						<div class="card" style="margin-top: var(--spacing-lg);">
+							<span class="card-meta">RECOVERY & PASSKEYS</span>
+							<h3>Protect this browser wallet</h3>
+							<p class="text-secondary">Add a passkey to require device verification when this DID signs in. Keep the downloaded encrypted file for recovery on another device.</p>
+							<div class="form-group"><label class="form-label" for="walletRecoveryPassword">Current recovery password</label><input id="walletRecoveryPassword" type="password" class="form-input" autocomplete="current-password" placeholder="Password used when creating this DID"></div>
+							<button id="enablePasskeyBtn" class="btn btn-primary">Enable passkey login</button>
+						</div>
                         <div id="didStatus" class="auth-status"></div>
                     </div>
                 </main>
@@ -51,19 +58,24 @@ const DidsPage = {
         document.getElementById('logoutBtn').addEventListener('click', logoutCurrentSession);
 
         this.renderWalletList();
+		document.getElementById('enablePasskeyBtn').addEventListener('click', async () => {
+			const status = document.getElementById('didStatus');
+			try {
+				const wallet = await Storage.getWallet(user.did);
+				if (!wallet?.passwordBackup) throw new Error('This older wallet has no encrypted recovery material. Create and link a new recoverable DID.');
+				status.textContent = 'Confirm your passkey provider…';
+				const payload = await RecoveryUtils.unlockPasswordBackup(wallet.passwordBackup, document.getElementById('walletRecoveryPassword').value);
+				const passkeyBackup = await RecoveryUtils.createPasskeyBackup(payload);
+				await Storage.saveWallet({ did: wallet.did, publicKey: wallet.publicKey, passwordBackup: wallet.passwordBackup, passkeyBackup });
+				RecoveryUtils.download(passkeyBackup, wallet.did);
+				status.textContent = 'Passkey enabled. Future sign-ins require it; keep both recovery files safe.';
+				await this.renderWalletList();
+			} catch (err) { status.textContent = `Passkey setup failed: ${err.message}`; }
+		});
 
         document.getElementById('createDidBtn').addEventListener('click', async () => {
-            const status = document.getElementById('didStatus');
-            try {
-                status.innerHTML = '<div class="info">Generating new DID...</div>';
-                const pair = await CryptoUtils.generateKeypair();
-				await Storage.saveWallet(pair);
-				await this.renderWalletList();
-                status.innerHTML = '<div class="success">New DID created!</div>';
-                setTimeout(() => status.innerHTML = '', 3000);
-            } catch (err) {
-				status.replaceChildren(); const message = document.createElement('div'); message.className = 'error'; message.textContent = err.message; status.appendChild(message);
-            }
+			Storage.logout();
+			APP_ROUTER.push('/login');
         });
 
         document.getElementById('copyDidBtn').addEventListener('click', () => {
@@ -106,7 +118,7 @@ const DidsPage = {
         wallets.forEach(w => {
             const card = document.createElement('div');
             card.className = 'card';
-			const meta = document.createElement('span'); meta.className = 'card-meta'; meta.textContent = 'ED25519';
+			const meta = document.createElement('span'); meta.className = 'card-meta'; meta.textContent = w.passkeyProtected ? 'PASSKEY · ED25519' : (w.hasRecovery ? 'RECOVERABLE · ED25519' : 'LEGACY · ED25519');
 			const did = document.createElement('p'); did.className = 'mono'; did.style.cssText = 'word-break: break-all; font-size: 0.75rem;'; did.textContent = w.did;
 			const actions = document.createElement('div'); actions.className = 'flex'; actions.style.marginTop = '10px';
 			const switchButton = document.createElement('button'); switchButton.className = 'btn btn-secondary btn-sm'; switchButton.textContent = 'Switch';
@@ -120,7 +132,9 @@ const DidsPage = {
     },
 
 	async deleteWallet(did) {
-        if (confirm('Are you sure you want to delete this DID from local storage? You will LOSE access to it if you have not exported your private key.')) {
+		const wallet = await Storage.getWallet(did);
+		if (!wallet?.passwordBackup && !wallet?.passkeyBackup) { alert('This wallet has no recovery backup. Deletion is blocked to prevent permanent account loss.'); return; }
+        if (confirm('Delete this DID from this browser? Confirm that your encrypted recovery file is stored safely first.')) {
 			await Storage.deleteWallet(did);
 			await this.renderWalletList();
         }

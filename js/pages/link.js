@@ -32,7 +32,7 @@ const LinkPage = {
             event.preventDefault(); const status=document.getElementById('linkStatus');
             try {
                 const did=select.value, wallet=await Storage.getWallet(did); if(!wallet) throw new Error('Create an identity before linking your account.');
-                status.textContent='Verifying identity…'; const challenge=await API_CLIENT.authChallenge(did); const signature=await CryptoUtils.sign(challenge.nonce,wallet.privateKey);
+				status.textContent=wallet.passkeyBackup?'Confirm your passkey…':'Verifying identity…'; const challenge=await API_CLIENT.authChallenge(did); const signature=await CryptoUtils.sign(challenge.nonce,await LoginPage.signingKeyFor(wallet));
                 await API_CLIENT.linkIdentity(did,challenge.nonce,signature); status.textContent='Identity connected. You can now sign in.'; setTimeout(()=>APP_ROUTER.push('/login'),700);
             } catch(error) { status.textContent=`Connection failed: ${error.message}`; }
         });

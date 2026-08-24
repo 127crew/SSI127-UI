@@ -33,6 +33,8 @@ const LoginPage = {
 								<h2>Sign in with your DID</h2>
 								<p>Select a wallet saved in this browser or paste its public DID.</p>
 							</div>
+							<a href="#/link" class="btn btn-primary btn-full">Continue with Forum</a>
+							<div class="auth-divider"><span>or use an activated identity</span></div>
 							<form id="loginForm" class="auth-form">
 								<div id="storedWallets" class="form-group" hidden>
 									<label class="form-label" for="walletSelect">Saved wallet</label>
@@ -47,7 +49,15 @@ const LoginPage = {
 								</div>
 								<button type="submit" class="btn btn-primary btn-full">Sign in securely</button>
 								<div class="auth-divider"><span>New identity</span></div>
-								<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Generate local DID key</button>
+								<div class="form-group">
+									<label class="form-label" for="recoveryPassword">Recovery password</label>
+									<input type="password" id="recoveryPassword" class="form-input" minlength="12" autocomplete="new-password" placeholder="12+ characters">
+									<small class="form-hint">Required when creating a DID; an encrypted recovery file downloads automatically.</small>
+								</div>
+								<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Create recoverable DID</button>
+								<div class="auth-divider"><span>Lost or new device</span></div>
+								<input type="file" id="recoveryFile" class="form-input" accept="application/json,.json">
+								<button type="button" id="restoreWalletBtn" class="btn btn-secondary btn-full">Restore encrypted wallet</button>
 							</form>
 							<div id="authStatus" class="auth-status" aria-live="polite"></div>
 							<p class="auth-local-note"><strong>Local means local.</strong> Generating a DID creates no server account and grants no access until forum verification is completed.</p>
@@ -73,6 +83,8 @@ const LoginPage = {
         const createBtn = document.getElementById('createWalletBtn');
         const walletSelect = document.getElementById('walletSelect');
         const didInput = document.getElementById('didInput');
+		const recoveryPassword = document.getElementById('recoveryPassword');
+		const recoveryFile = document.getElementById('recoveryFile');
 
         walletSelect.addEventListener('change', () => {
             if (walletSelect.value) {
@@ -91,8 +103,12 @@ const LoginPage = {
             try {
 				createBtn.disabled = true;
                 statusEl.innerHTML = '<div class="info">Generating secure keys...</div>';
+				if (recoveryPassword.value.length < 12) throw new Error('Enter a recovery password of at least 12 characters first.');
                 const pair = await CryptoUtils.generateKeypair();
-				await Storage.saveWallet(pair);
+				const backup = await RecoveryUtils.createPasswordBackup(pair.recoveryPayload, recoveryPassword.value);
+				await Storage.saveWallet({ ...pair, passwordBackup: backup });
+				RecoveryUtils.download(backup, pair.did);
+				pair.recoveryPayload.pkcs8 = '';
 
                 didInput.value = pair.did;
 				await this.loadStoredWallets();
@@ -108,6 +124,18 @@ const LoginPage = {
 				createBtn.disabled = false;
             }
         });
+
+		document.getElementById('restoreWalletBtn').addEventListener('click', async () => {
+			try {
+				const file = recoveryFile.files[0]; if (!file) throw new Error('Choose a recovery JSON file first.');
+				const envelope = JSON.parse(await file.text());
+				const payload = envelope.type === 'passkey' ? await RecoveryUtils.unlockPasskeyBackup(envelope) : await RecoveryUtils.unlockPasswordBackup(envelope, recoveryPassword.value);
+				const wallet = await CryptoUtils.importRecoveredWallet(payload);
+				await Storage.saveWallet(envelope.type === 'passkey' ? { did: wallet.did, publicKey: wallet.publicKey, passkeyBackup: envelope } : { ...wallet, passwordBackup: envelope });
+				didInput.value = wallet.did; await this.loadStoredWallets(); walletSelect.value = wallet.did;
+				statusEl.textContent = 'Wallet restored. You can now sign in.';
+			} catch (err) { statusEl.textContent = `Restore failed: ${err.message}`; }
+		});
     },
 
 	async loadStoredWallets() {
@@ -132,6 +160,15 @@ const LoginPage = {
         }
     },
 
+	async signingKeyFor(wallet) {
+		if (wallet.privateKey) return wallet.privateKey;
+		if (wallet.passkeyBackup) {
+			const payload = await RecoveryUtils.unlockPasskeyBackup(wallet.passkeyBackup);
+			return (await CryptoUtils.importRecoveredWallet(payload)).privateKey;
+		}
+		throw new Error('Signing key unavailable. Restore this wallet from its recovery file.');
+	},
+
     async authenticate(did, statusEl) {
         try {
 			const wallet = await Storage.getWallet(did);
@@ -144,7 +181,11 @@ const LoginPage = {
             const nonce = chalRes.nonce;
 
             statusEl.innerHTML = '<div class="info">Phase 2: Signing internally...</div>';
-            const signature = await CryptoUtils.sign(nonce, wallet.privateKey);
+			if (!wallet.privateKey && wallet.passkeyBackup) {
+				statusEl.innerHTML = '<div class="info">Confirm your passkey to unlock the DID...</div>';
+			}
+			const signingKey = await this.signingKeyFor(wallet);
+			const signature = await CryptoUtils.sign(nonce, signingKey);
 
             statusEl.innerHTML = '<div class="info">Phase 3: Verifying Signature...</div>';
             const verifyRes = await API_CLIENT.authVerify(did, nonce, signature);

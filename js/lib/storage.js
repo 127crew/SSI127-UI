@@ -44,9 +44,15 @@ class Storage {
 
     static async getWallets() {
         await this.migrateLegacyWallets();
-        return (await this.walletTransaction('readonly', store => store.getAll())).map(({ did, publicKey }) => ({ did, publicKey }));
+        return (await this.walletTransaction('readonly', store => store.getAll())).map(({ did, publicKey, passwordBackup, passkeyBackup }) => ({ did, publicKey, hasRecovery: !!passwordBackup, passkeyProtected: !!passkeyBackup }));
     }
-    static async saveWallet(wallet) { return this.walletTransaction('readwrite', store => store.put(wallet)); }
+    static async saveWallet(wallet) {
+		const safe = { did: wallet.did, publicKey: wallet.publicKey };
+		if (wallet.privateKey) safe.privateKey = wallet.privateKey;
+		if (wallet.passwordBackup) safe.passwordBackup = wallet.passwordBackup;
+		if (wallet.passkeyBackup) safe.passkeyBackup = wallet.passkeyBackup;
+		return this.walletTransaction('readwrite', store => store.put(safe));
+	}
     static async getWallet(did) { await this.migrateLegacyWallets(); return this.walletTransaction('readonly', store => store.get(did)); }
     static async deleteWallet(did) { return this.walletTransaction('readwrite', store => store.delete(did)); }
 

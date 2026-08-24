@@ -25,18 +25,34 @@ function base58Encode(bytes) {
 const CryptoUtils = {
     async generateKeypair() {
 		if (!crypto.subtle) throw new Error('Secure browser key storage is unavailable.');
-		const pair = await crypto.subtle.generateKey({ name: 'Ed25519' }, false, ['sign', 'verify']);
-		const pubKey = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
+        const pair = await crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+        const pubKey = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
+		const pkcs8 = new Uint8Array(await crypto.subtle.exportKey('pkcs8', pair.privateKey));
+		const privateKey = await crypto.subtle.importKey('pkcs8', pkcs8, { name: 'Ed25519' }, false, ['sign']);
 		const multicodecKey = new Uint8Array(2 + pubKey.length);
 		multicodecKey.set([0xed, 0x01]);
 		multicodecKey.set(pubKey, 2);
 		const did = `did:key:z${base58Encode(multicodecKey)}`;
         return {
-			privateKey: pair.privateKey,
+			privateKey,
             publicKey: bytesToHex(pubKey),
-            did
+			did,
+			recoveryPayload: { version: 1, did, publicKey: bytesToHex(pubKey), pkcs8: RecoveryUtils.bytesToBase64Url(pkcs8) }
         };
     },
+
+	async importRecoveredWallet(payload) {
+		if (!payload || payload.version !== 1 || typeof payload.did !== 'string' || typeof payload.publicKey !== 'string' || typeof payload.pkcs8 !== 'string') throw new Error('Invalid wallet recovery data.');
+		const publicBytes = hexToBytes(payload.publicKey);
+		const multicodec = new Uint8Array(publicBytes.length + 2); multicodec.set([0xed, 0x01]); multicodec.set(publicBytes, 2);
+		if (`did:key:z${base58Encode(multicodec)}` !== payload.did) throw new Error('Recovery file DID does not match its public key.');
+		const privateKey = await crypto.subtle.importKey('pkcs8', RecoveryUtils.base64UrlToBytes(payload.pkcs8), { name: 'Ed25519' }, false, ['sign']);
+		const publicKey = await crypto.subtle.importKey('raw', publicBytes, { name: 'Ed25519' }, false, ['verify']);
+		const test = crypto.getRandomValues(new Uint8Array(32));
+		const signature = await crypto.subtle.sign('Ed25519', privateKey, test);
+		if (!await crypto.subtle.verify('Ed25519', publicKey, signature, test)) throw new Error('Recovery private key does not match this DID.');
+		return { did: payload.did, publicKey: payload.publicKey, privateKey };
+	},
 
 	async sign(nonce, privateKey) {
 		if (!(privateKey instanceof CryptoKey) || privateKey.type !== 'private' || privateKey.algorithm.name !== 'Ed25519') {
