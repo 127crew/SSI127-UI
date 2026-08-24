@@ -70,7 +70,10 @@ python3 -m http.server 8000
 
 Visit http://localhost:8000
 
-**Note:** If running locally, update the API base URL in `js/api.js` to point to your local SSI127 backend (default: `http://localhost:8080`)
+**Note:** Public runtime configuration lives in `js/config.js`. It contains no
+secrets. Static staging or self-hosted deployments should replace its `apiURL`
+with their HTTPS SSI127 issuer; local development continues to default to
+`http://localhost:8080` when the setting is omitted.
 
 ## Deployment to GitHub Pages
 
@@ -99,14 +102,16 @@ Visit http://localhost:8000
 ## Configuration
 
 ### Backend URL
-Update the API base URL in `js/api.js`:
+Set the public API origin in `js/config.js`:
 ```javascript
-const API_CLIENT = new API(
-  window.location.hostname === 'localhost' 
-    ? 'http://localhost:8080' 
-    : 'https://ssi.127crew.dev'
-);
+window.SSI127_CONFIG = Object.freeze({
+  apiURL: 'https://ssi-staging.example.org'
+});
 ```
+
+Use `null` for the built-in defaults (`http://localhost:8080` on localhost and
+`https://ssi.127crew.dev` elsewhere). The value must be an HTTPS origin outside
+local development. Never put a client secret or any other secret in this file.
 
 ### CORS
 Ensure your SSI127 backend has CORS enabled for `accounts.127crew.dev` domain.

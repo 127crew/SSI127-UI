@@ -127,12 +127,21 @@ async function logoutCurrentSession() {
     }
 }
 
-// Global API instance - update baseURL as needed
-const API_CLIENT = new API(
-    window.location.hostname === 'localhost'
+function configuredAPIURL() {
+    const fallback = window.location.hostname === 'localhost'
         ? 'http://localhost:8080'
-        : 'https://ssi.127crew.dev'
-);
+        : 'https://ssi.127crew.dev';
+    const candidate = window.SSI127_CONFIG?.apiURL || fallback;
+    const parsed = new URL(candidate);
+    const localHTTP = parsed.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parsed.hostname);
+    if (parsed.protocol !== 'https:' && !localHTTP) throw new Error('SSI127 API URL must use HTTPS outside local development');
+    if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) throw new Error('SSI127 API URL must be a plain origin');
+    return parsed.origin;
+}
+
+// Global API instance. Production defaults are in js/config.js; staging and
+// self-hosted deployments replace only that public file.
+const API_CLIENT = new API(configuredAPIURL());
 
 // For testing: override API URL if needed
 if (window.location.hostname === 'localhost' && window.location.search.includes('api=')) {
