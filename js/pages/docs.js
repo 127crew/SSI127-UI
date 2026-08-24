@@ -59,7 +59,7 @@ const DocsPage = {
 
                         <section id="scopes" class="docs-section">
                             <span class="docs-step">05</span><h2>Request minimal scopes</h2>
-                            <div class="docs-table"><div><code>openid</code><span>Required. Issues an ID token.</span></div><div><code>profile</code><span>Basic member identity claims.</span></div><div><code>forum</code><span>Linked Forum identifier.</span></div><div><code>offline_access</code><span>Rotating refresh token; request only when needed.</span></div></div>
+							<div class="docs-table"><div><code>openid</code><span>Required. Issues an ID token.</span></div><div><code>profile</code><span>Name, username, and profile picture.</span></div><div><code>email</code><span>Email and its verified-ownership status.</span></div><div><code>forum</code><span>Linked Forum identifier.</span></div><div><code>offline_access</code><span>Rotating refresh token; request only when needed.</span></div></div>
                         </section>
 
                         <section id="logout" class="docs-section">

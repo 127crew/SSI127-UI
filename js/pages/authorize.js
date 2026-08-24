@@ -64,7 +64,7 @@ const AuthorizePage = {
 		const oidcNonce = params.get('nonce') || '';
 		const scope = params.get('scope') || '';
 		if (!clientId || !redirectUri || responseType !== 'code' || !state || !oidcNonce || !scope || !codeChallenge || codeChallengeMethod !== 'S256') return;
-		const scopeDescriptions = { openid: 'Your stable SSI subject identifier', profile: 'Your basic DID profile', forum: 'Your linked forum member identifier', offline_access: 'Continued access using a rotating refresh token' };
+		const scopeDescriptions = { openid: 'Your stable SSI subject identifier', profile: 'Your display name, username, and profile picture', email: 'Your email address and whether ownership was verified', forum: 'Your linked forum member identifier', offline_access: 'Continued access using a rotating refresh token' };
 		const scopeList = document.getElementById('scopeList');
 		for (const requested of [...new Set(scope.split(/\s+/).filter(Boolean))]) {
 			const item = document.createElement('li');
@@ -110,7 +110,8 @@ const AuthorizePage = {
                 const nonce = chalRes.nonce;
 
                 // 2. Sign challenge
-                const signature = await CryptoUtils.sign(nonce, wallet.privateKey);
+				if (!wallet.privateKey && wallet.passkeyBackup) statusEl.innerHTML = '<div class="info">Confirm your passkey to approve this application...</div>';
+				const signature = await CryptoUtils.sign(nonce, await LoginPage.signingKeyFor(wallet));
 
                 // 3. Authorize with backend
                 statusEl.innerHTML = '<div class="info">Approving with identity provider...</div>';
