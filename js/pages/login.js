@@ -3,39 +3,56 @@ const LoginPage = {
     async render(container) {
         container.innerHTML = `
             <div class="auth-container">
-                <div class="auth-card">
-                    <h1 class="auth-title">SSI127</h1>
-                    <p class="auth-subtitle">Self-Sovereign Identity</p>
-                    
-                    <form id="loginForm" class="auth-form">
-                        <div class="form-group">
-                            <label class="form-label">DID (Decentralized Identifier)</label>
-                            <input type="text" id="didInput" name="did" class="form-input" placeholder="did:key:z..." required>
-                            <small class="form-hint">Enter your DID or use a stored wallet</small>
-                        </div>
-                        
-                        <div id="storedWallets" style="margin-bottom: var(--spacing-md); display: none;">
-                            <label class="form-label">Saved Wallets</label>
-                            <select id="walletSelect" class="form-input" style="margin-bottom: var(--spacing-sm);">
-                                <option value="">-- Select a wallet --</option>
-                            </select>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-full">Sign In</button>
-                        
-                        <div class="auth-divider">or</div>
-                        
-						<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Generate Local DID Key</button>
-						<p class="auth-help">This creates a cryptographic key only in this browser. It does not create a server account or grant SSI127 access.</p>
-						<p class="auth-help">To activate it, you must <a href="#/link">connect a verified forum account with an @127crew.dev email</a>.</p>
-                    </form>
-                    
-                    <div id="authStatus" class="auth-status"></div>
-                    
-                    <div class="auth-help">
-                        <p><strong>System Status:</strong> <span id="backendStatus">Checking...</span></p>
-                        <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">API: <span id="backendUrl"></span></p>
-                    </div>
+				<div class="auth-card auth-card-wide">
+					<div class="auth-layout">
+						<aside class="auth-intro">
+							<div>
+								<span class="auth-eyebrow">127CREW IDENTITY</span>
+								<h1 class="auth-title">SSI<span>127</span></h1>
+								<p class="auth-subtitle">One verified identity for the 127crew ecosystem and the apps you trust.</p>
+							</div>
+							<ul class="auth-benefits" aria-label="Identity protections">
+								<li><strong>Your key stays local</strong><span>The private signing key never leaves this browser.</span></li>
+								<li><strong>Membership gated</strong><span>Activation requires a verified @127crew.dev forum account.</span></li>
+								<li><strong>You stay in control</strong><span>Review connected apps and revoke sessions at any time.</span></li>
+							</ul>
+							<div class="auth-eligibility">
+								<span class="auth-eligibility-label">FIRST TIME HERE?</span>
+								<p>Generate a local DID, then connect it to your eligible forum membership.</p>
+								<a href="#/link">Connect forum account →</a>
+							</div>
+							<div class="auth-system">
+								<span><i class="status-dot"></i> <strong id="backendStatus">Checking…</strong></span>
+								<span id="backendUrl" class="mono"></span>
+							</div>
+						</aside>
+
+						<section class="auth-panel">
+							<div class="auth-panel-heading">
+								<span class="auth-eyebrow">WELCOME BACK</span>
+								<h2>Sign in with your DID</h2>
+								<p>Select a wallet saved in this browser or paste its public DID.</p>
+							</div>
+							<form id="loginForm" class="auth-form">
+								<div id="storedWallets" class="form-group" hidden>
+									<label class="form-label" for="walletSelect">Saved wallet</label>
+									<select id="walletSelect" class="form-input">
+										<option value="">Choose a wallet</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label class="form-label" for="didInput">Decentralized identifier</label>
+									<input type="text" id="didInput" name="did" class="form-input mono" placeholder="did:key:z..." autocomplete="username" spellcheck="false" required>
+									<small class="form-hint">Public identifier only—the matching private key must exist in this browser.</small>
+								</div>
+								<button type="submit" class="btn btn-primary btn-full">Sign in securely</button>
+								<div class="auth-divider"><span>New identity</span></div>
+								<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Generate local DID key</button>
+							</form>
+							<div id="authStatus" class="auth-status" aria-live="polite"></div>
+							<p class="auth-local-note"><strong>Local means local.</strong> Generating a DID creates no server account and grants no access until forum verification is completed.</p>
+						</section>
+					</div>
                 </div>
             </div>
         `;
@@ -72,12 +89,13 @@ const LoginPage = {
 
         createBtn.addEventListener('click', async () => {
             try {
+				createBtn.disabled = true;
                 statusEl.innerHTML = '<div class="info">Generating secure keys...</div>';
                 const pair = await CryptoUtils.generateKeypair();
 				await Storage.saveWallet(pair);
 
                 didInput.value = pair.did;
-                this.loadStoredWallets();
+				await this.loadStoredWallets();
                 walletSelect.value = pair.did;
 
 				statusEl.replaceChildren(); const success = document.createElement('div'); success.className = 'success';
@@ -86,6 +104,8 @@ const LoginPage = {
 				success.append(message, did); statusEl.appendChild(success);
             } catch (err) {
 				statusEl.replaceChildren(); const error = document.createElement('div'); error.className = 'error'; error.textContent = `Generation failed: ${err.message}`; statusEl.appendChild(error);
+			} finally {
+				createBtn.disabled = false;
             }
         });
     },
@@ -94,16 +114,21 @@ const LoginPage = {
 		const wallets = await Storage.getWallets();
         const select = document.getElementById('walletSelect');
         const container = document.getElementById('storedWallets');
+		const placeholder = document.createElement('option');
+		placeholder.value = '';
+		placeholder.textContent = 'Choose a wallet';
+		select.replaceChildren(placeholder);
 
         if (wallets.length > 0) {
-            container.style.display = 'block';
-            select.innerHTML = '<option value="">-- Select a wallet --</option>';
+            container.hidden = false;
             wallets.forEach(w => {
                 const opt = document.createElement('option');
                 opt.value = w.did;
                 opt.textContent = w.did.substring(0, 15) + '...';
                 select.appendChild(opt);
             });
+		} else {
+			container.hidden = true;
         }
     },
 
@@ -148,9 +173,11 @@ const LoginPage = {
         const el = document.getElementById('backendStatus');
         try {
             const res = await fetch(`${API_CLIENT.baseURL}/health`);
-            el.innerHTML = res.ok ? '<span style="color: #00F0FF;">ONLINE</span>' : '<span style="color: #ff4d4d;">ERROR</span>';
+			el.textContent = res.ok ? 'Online' : 'Unavailable';
+			el.className = res.ok ? 'status-online' : 'status-error';
         } catch (e) {
-            el.innerHTML = '<span style="color: #ff4d4d;">OFFLINE</span>';
+			el.textContent = 'Offline';
+			el.className = 'status-error';
         }
     }
 };
