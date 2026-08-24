@@ -6,7 +6,7 @@
     justify-content: center;
     min-height: 100vh;
     background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(0, 0, 0, 0.1));
-    padding: clamp(20px, 4vw, 64px);
+    padding: clamp(16px, 2.5vw, 40px);
 }
 
 .auth-card {
@@ -20,20 +20,20 @@
 }
 
 .auth-card-wide {
-    max-width: 1040px;
+    max-width: 1280px;
     padding: 0;
     overflow: hidden;
 }
 
 .auth-layout {
     display: grid;
-    grid-template-columns: minmax(320px, 0.88fr) minmax(440px, 1.12fr);
-    min-height: 640px;
+    grid-template-columns: minmax(360px, 0.9fr) minmax(560px, 1.35fr);
+    min-height: 580px;
 }
 
 .auth-intro,
 .auth-panel {
-    padding: clamp(32px, 4vw, 56px);
+    padding: clamp(28px, 3vw, 48px);
 }
 
 .auth-intro {
@@ -63,21 +63,24 @@
 
 .auth-benefits {
     display: grid;
-    gap: 22px;
-    margin: 34px 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 28px 0;
     list-style: none;
 }
 
 .auth-benefits li {
     position: relative;
-    padding-left: 28px;
+    padding: 16px 14px 14px;
+    border: 1px solid var(--border-color);
+    background: rgba(17, 17, 17, 0.42);
 }
 
 .auth-benefits li::before {
     content: '';
     position: absolute;
-    top: 7px;
-    left: 0;
+    top: 0;
+    left: 14px;
     width: 8px;
     height: 8px;
     border: 1px solid var(--primary-accent);
@@ -196,6 +199,26 @@
 .auth-form {
     margin: 28px 0 0;
 }
+
+.auth-recovery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.auth-recovery-option {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid var(--border-color);
+    background: rgba(5, 5, 5, 0.38);
+}
+
+.auth-recovery-option .auth-eyebrow { margin-bottom: 14px; }
+.auth-recovery-option .form-group { flex: 1; }
+.auth-recovery-option .form-hint { line-height: 1.45; }
 
 .btn-full {
     width: 100%;
@@ -384,7 +407,7 @@
     }
 
     .auth-benefits {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
         margin: 26px 0;
     }
@@ -396,4 +419,5 @@
     .auth-benefits { grid-template-columns: 1fr; gap: 14px; }
     .auth-system { flex-direction: column; gap: 6px; }
     .auth-title { font-size: 2.2rem; }
+	.auth-recovery-grid { grid-template-columns: 1fr; }
 }

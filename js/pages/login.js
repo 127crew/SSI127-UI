@@ -48,16 +48,26 @@ const LoginPage = {
 									<small class="form-hint">Public identifier only—the matching private key must exist in this browser.</small>
 								</div>
 								<button type="submit" class="btn btn-primary btn-full">Sign in securely</button>
-								<div class="auth-divider"><span>New identity</span></div>
-								<div class="form-group">
-									<label class="form-label" for="recoveryPassword">Recovery password</label>
-									<input type="password" id="recoveryPassword" class="form-input" minlength="12" autocomplete="new-password" placeholder="12+ characters">
-									<small class="form-hint">Required when creating a DID; an encrypted recovery file downloads automatically.</small>
+								<div class="auth-recovery-grid">
+									<section class="auth-recovery-option">
+										<span class="auth-eyebrow">NEW IDENTITY</span>
+										<div class="form-group">
+											<label class="form-label" for="recoveryPassword">Recovery password</label>
+											<input type="password" id="recoveryPassword" class="form-input" minlength="12" autocomplete="new-password" placeholder="12+ characters">
+											<small class="form-hint">Creates a DID and downloads its encrypted recovery file.</small>
+										</div>
+										<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Create recoverable DID</button>
+									</section>
+									<section class="auth-recovery-option">
+										<span class="auth-eyebrow">LOST OR NEW DEVICE</span>
+										<div class="form-group">
+											<label class="form-label" for="recoveryFile">Encrypted recovery file</label>
+											<input type="file" id="recoveryFile" class="form-input" accept="application/json,.json">
+											<small class="form-hint">Restore a DID backup created by SSI127.</small>
+										</div>
+										<button type="button" id="restoreWalletBtn" class="btn btn-secondary btn-full">Restore encrypted wallet</button>
+									</section>
 								</div>
-								<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Create recoverable DID</button>
-								<div class="auth-divider"><span>Lost or new device</span></div>
-								<input type="file" id="recoveryFile" class="form-input" accept="application/json,.json">
-								<button type="button" id="restoreWalletBtn" class="btn btn-secondary btn-full">Restore encrypted wallet</button>
 							</form>
 							<div id="authStatus" class="auth-status" aria-live="polite"></div>
 							<p class="auth-local-note"><strong>Local means local.</strong> Generating a DID creates no server account and grants no access until forum verification is completed.</p>
