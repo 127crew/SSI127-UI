@@ -55,6 +55,8 @@ const DocsPage = {
                             <span class="docs-step">04</span><h2>Validate tokens</h2>
                             <p>Fetch signing keys from <code>/auth/jwks</code>. Require RS256, a known <code>kid</code>, the configured issuer, your client ID as audience, an unexpired token, <code>token_use=id</code>, and the exact nonce from your login transaction.</p>
                             <div class="docs-grid"><div class="card"><span class="card-meta">ACCESS TOKEN</span><h3>15 minutes</h3><p>Use for API access. Introspect when immediate revocation enforcement matters.</p></div><div class="card"><span class="card-meta">REFRESH TOKEN</span><h3>30 days</h3><p>Issued only with offline_access. It rotates on every use; reuse revokes its family.</p></div></div>
+							<div class="code-panel"><div class="code-title"><span>Load consented identity claims</span><button class="copy-code" data-copy="userInfoCode">Copy</button></div><pre><code id="userInfoCode"></code></pre></div>
+							<p>UserInfo always returns the stable <code>sub</code>. Profile, email, and Forum claims appear only when their scopes were approved. Trust <code>email_verified</code>; never infer verification from the domain.</p>
                         </section>
 
                         <section id="scopes" class="docs-section">
@@ -83,6 +85,21 @@ const DocsPage = {
         document.getElementById('discoveryUrl').textContent = `${issuer}/.well-known/openid-configuration`;
         document.getElementById('authorizeCode').textContent = `GET ${issuer}/oauth/authorize?\n  response_type=code&\n  client_id=YOUR_CLIENT_ID&\n  redirect_uri=https%3A%2F%2Fyour-app.example%2Fauth%2Fcallback&\n  scope=openid%20profile&\n  state=RANDOM_STATE&\n  nonce=RANDOM_NONCE&\n  code_challenge=BASE64URL_SHA256_VERIFIER&\n  code_challenge_method=S256`;
         document.getElementById('tokenCode').textContent = `curl -X POST '${issuer}/oauth/token' \\\n+  -u 'YOUR_CLIENT_ID:YOUR_CLIENT_SECRET' \\\n+  -H 'Content-Type: application/json' \\\n+  -d '{\n    "grant_type":"authorization_code",\n    "client_id":"YOUR_CLIENT_ID",\n    "code":"CALLBACK_CODE",\n    "redirect_uri":"https://your-app.example/auth/callback",\n    "code_verifier":"ORIGINAL_PKCE_VERIFIER"\n  }'`;
+		document.getElementById('userInfoCode').textContent = `curl '${issuer}/oauth/userinfo' \\
+  -H 'Authorization: Bearer ACCESS_TOKEN' \\
+  -H 'Accept: application/json'`;
+		document.getElementById('tokenCode').textContent = [
+			`curl -X POST '${issuer}/oauth/token' \\`,
+			"  -u 'YOUR_CLIENT_ID:YOUR_CLIENT_SECRET' \\",
+			"  -H 'Content-Type: application/json' \\",
+			"  -d '{",
+			'    "grant_type":"authorization_code",',
+			'    "client_id":"YOUR_CLIENT_ID",',
+			'    "code":"CALLBACK_CODE",',
+			'    "redirect_uri":"https://your-app.example/auth/callback",',
+			'    "code_verifier":"ORIGINAL_PKCE_VERIFIER"',
+			"  }'",
+		].join('\n');
         document.querySelectorAll('.copy-code').forEach(button => button.addEventListener('click', async () => {
             const source = document.getElementById(button.dataset.copy);
             await navigator.clipboard.writeText(source.textContent);
