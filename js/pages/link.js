@@ -5,6 +5,7 @@ const LinkPage = {
             <div class="auth-container"><div class="auth-card">
                 <h1 class="auth-title">Connect your forum account</h1>
                 <p class="auth-subtitle">Only verified members with a @127crew.dev email can activate SSI127.</p>
+				<p class="text-secondary">A DID is the public identifier for a private signing key stored only in your browser. Generating one does not contact the SSI127 server.</p>
                 <div id="forumStep" ${ready ? 'hidden' : ''}>
                     <p class="text-secondary">Continue to the 127crew forum. You will return here automatically after confirming your existing session.</p>
                     <button id="continueForum" class="btn btn-primary btn-full">Continue to forum</button>

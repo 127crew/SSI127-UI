@@ -25,8 +25,9 @@ const LoginPage = {
                         
                         <div class="auth-divider">or</div>
                         
-                        <button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Create New Identity</button>
-						<p class="auth-help">First time here? <a href="#/link">Connect a verified forum account</a></p>
+						<button type="button" id="createWalletBtn" class="btn btn-secondary btn-full">Generate Local DID Key</button>
+						<p class="auth-help">This creates a cryptographic key only in this browser. It does not create a server account or grant SSI127 access.</p>
+						<p class="auth-help">To activate it, you must <a href="#/link">connect a verified forum account with an @127crew.dev email</a>.</p>
                     </form>
                     
                     <div id="authStatus" class="auth-status"></div>
@@ -80,7 +81,7 @@ const LoginPage = {
                 walletSelect.value = pair.did;
 
 				statusEl.replaceChildren(); const success = document.createElement('div'); success.className = 'success';
-				const message = document.createElement('p'); message.textContent = 'New DID created and saved!';
+				const message = document.createElement('p'); message.textContent = 'Local DID key generated. It is not active until connected to an eligible forum account.';
 				const did = document.createElement('small'); did.style.wordBreak = 'break-all'; did.textContent = pair.did;
 				success.append(message, did); statusEl.appendChild(success);
             } catch (err) {
