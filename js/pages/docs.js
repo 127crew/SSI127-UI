@@ -26,13 +26,13 @@ const DocsPage = {
                         <section id="overview" class="docs-hero">
                             <span class="auth-eyebrow">SSI127 FOR DEVELOPERS</span>
                             <h1>Add trusted 127crew sign-in</h1>
-                            <p>Use OpenID Connect Authorization Code flow with S256 PKCE. SSI127 handles verified community membership and DID authentication; your backend receives standards-based tokens.</p>
+							<p>Use OpenID Connect Authorization Code flow with S256 PKCE. SSI127 handles registered community identities and DID authentication; your backend receives standards-based tokens.</p>
                             <div class="docs-callout"><strong>Discovery URL</strong><code id="discoveryUrl"></code><button class="copy-code" data-copy="discoveryUrl">Copy</button></div>
                         </section>
 
                         <section id="quickstart" class="docs-section">
                             <span class="docs-step">01</span><h2>Register your application</h2>
-                            <p>Sign in, open the Developer Portal, and register an exact HTTPS callback URL. The client secret is displayed once. Store it only in your backend secret manager—never frontend JavaScript.</p>
+							<p>Officially verified @127crew.dev developers can open the Developer Portal and register an exact HTTPS callback URL. The client secret is displayed once. Store it only in your backend secret manager—never frontend JavaScript.</p>
                             <a href="#/clients" class="btn btn-primary">Open Developer Portal</a>
                             <div class="docs-note"><strong>Local development:</strong> loopback HTTP callbacks are supported. Deployed callbacks require HTTPS; wildcards are rejected.</div>
                         </section>

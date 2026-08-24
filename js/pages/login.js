@@ -9,16 +9,16 @@ const LoginPage = {
 							<div>
 								<span class="auth-eyebrow">127CREW IDENTITY</span>
 								<h1 class="auth-title">SSI<span>127</span></h1>
-								<p class="auth-subtitle">One verified identity for the 127crew ecosystem and the apps you trust.</p>
+								<p class="auth-subtitle">One community identity for the 127crew ecosystem and the apps you trust.</p>
 							</div>
 							<ul class="auth-benefits" aria-label="Identity protections">
 								<li><strong>Your key stays local</strong><span>The private signing key never leaves this browser.</span></li>
-								<li><strong>Membership gated</strong><span>Activation requires a verified @127crew.dev forum account.</span></li>
+								<li><strong>Community account</strong><span>Activation requires an active registered 127crew Forum account.</span></li>
 								<li><strong>You stay in control</strong><span>Review connected apps and revoke sessions at any time.</span></li>
 							</ul>
 							<div class="auth-eligibility">
 								<span class="auth-eligibility-label">FIRST TIME HERE?</span>
-								<p>Generate a local DID, then connect it to your eligible forum membership.</p>
+								<p>Generate a local DID, then connect it to your registered Forum account.</p>
 								<a href="#/link">Connect forum account →</a>
 							</div>
 							<div class="auth-system">
@@ -116,7 +116,7 @@ const LoginPage = {
                 walletSelect.value = pair.did;
 
 				statusEl.replaceChildren(); const success = document.createElement('div'); success.className = 'success';
-				const message = document.createElement('p'); message.textContent = 'Local DID key generated. It is not active until connected to an eligible forum account.';
+				const message = document.createElement('p'); message.textContent = 'Local DID key generated. It is not active until connected to a registered Forum account.';
 				const did = document.createElement('small'); did.style.wordBreak = 'break-all'; did.textContent = pair.did;
 				success.append(message, did); statusEl.appendChild(success);
             } catch (err) {
