@@ -33,8 +33,6 @@ const LoginPage = {
 								<h2>Sign in with your DID</h2>
 								<p>Select a wallet saved in this browser or paste its public DID.</p>
 							</div>
-							<a href="#/link" class="btn btn-primary btn-full">Continue with Forum</a>
-							<div class="auth-divider"><span>or use an activated identity</span></div>
 							<form id="loginForm" class="auth-form">
 								<div id="storedWallets" class="form-group" hidden>
 									<label class="form-label" for="walletSelect">Saved wallet</label>
