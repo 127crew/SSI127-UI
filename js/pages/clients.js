@@ -20,7 +20,7 @@ const ClientsPage = {
                     <div class="container">
                         <h1>Developer Portal</h1>
 						<p class="text-secondary">Create and manage SSO integrations for your websites</p>
-						<p class="info" style="padding: var(--spacing-md);">Application registration is available to officially verified members with a @127crew.dev email. Every registered member can still use SSI127 to sign in.</p>
+						<p class="info" style="padding: var(--spacing-md);">Application registration requires official membership verification and verified ownership of an @127crew.dev email. Every registered member can still use SSI127 to sign in.</p>
 						<a href="#/docs" class="btn btn-secondary">Read integration documentation</a>
                         
                         <form id="registerClientForm" class="form-card" style="margin-top: var(--spacing-lg);">

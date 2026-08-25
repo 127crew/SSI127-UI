@@ -32,7 +32,7 @@ const DocsPage = {
 
                         <section id="quickstart" class="docs-section">
                             <span class="docs-step">01</span><h2>Register your application</h2>
-							<p>Officially verified @127crew.dev developers can open the Developer Portal and register an exact HTTPS callback URL. The client secret is displayed once. Store it only in your backend secret manager—never frontend JavaScript.</p>
+							<p>Developers with official membership verification and verified ownership of an @127crew.dev email can open the Developer Portal and register an exact HTTPS callback URL. The client secret is displayed once. Store it only in your backend secret manager—never frontend JavaScript.</p>
                             <a href="#/clients" class="btn btn-primary">Open Developer Portal</a>
                             <div class="docs-note"><strong>Local development:</strong> loopback HTTP callbacks are supported. Deployed callbacks require HTTPS; wildcards are rejected.</div>
 							<p><a class="btn btn-secondary" href="assets/continue-with-ssi127-dark.svg" download>Download dark button</a> <a class="btn btn-secondary" href="assets/continue-with-ssi127-light.svg" download>Download light button</a></p>
